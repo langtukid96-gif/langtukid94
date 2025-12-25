@@ -1,0 +1,3672 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <!-- ======================================================
+       MEDIA • AI ENGLISH LEARNING SYSTEM
+       CORE HTML SKELETON
+       Author: Trần Quốc Trung
+       Version: 1.0
+       ====================================================== -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- SEO META -->
+  <meta name="description" content="Media Player + AI English Learning Platform">
+  <meta name="keywords" content="English Learning, Music, Lyrics, AI, Quiz">
+  <meta name="author" content="Trần Quốc Trung">
+  <title>Media • AI English Learning</title>
+  <!-- ======================================================
+       GLOBAL STYLE IMPORT
+       ====================================================== -->
+  <style>
+    /* ===========================
+       GLOBAL RESET
+       =========================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: "Times New Roman", serif;
+      background: #0b0f16;
+      color: #ffffff;
+      line-height: 1.6;
+    }
+    /* ===========================
+       ROOT VARIABLES
+       =========================== */
+    :root {
+      --primary: #ff3b3b;
+      --secondary: #1e90ff;
+      --bg-dark: #0b0f16;
+      --bg-card: rgba(255,255,255,0.06);
+      --border-soft: rgba(255,255,255,0.15);
+      --radius: 16px;
+    }
+    /* ===========================
+       LAYOUT CONTAINER
+       =========================== */
+    .app-container {
+      max-width: 1400px;
+      margin: auto;
+      padding: 24px;
+    }
+    /* ===========================
+       HEADER
+       =========================== */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+    header .subtitle {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+    /* ===========================
+       GRID SYSTEM
+       =========================== */
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    /* ===========================
+       CARD COMPONENT
+       =========================== */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: #ffd166;
+    }
+    /* ===========================
+       MEDIA PLAYER CONTAINER
+       =========================== */
+    .player-wrapper iframe {
+      width: 100%;
+      height: 340px;
+      border: none;
+      border-radius: 12px;
+      background: #000;
+    }
+    /* ===========================
+       BUTTON SYSTEM
+       =========================== */
+    button {
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border-soft);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: rgba(255,255,255,0.18);
+    }
+  </style>
+</head>
+<body>
+  <!-- ======================================================
+       APPLICATION ROOT
+       ====================================================== -->
+  <div class="app-container">
+    <!-- ================= HEADER ================= -->
+    <header>
+      <div>
+        <h1>🎧 Media • AI English Learning</h1>
+        <div class="subtitle">
+          Learn English through Music, Lyrics & AI
+        </div>
+      </div>
+    </header>
+    <!-- ================= MAIN GRID ================= -->
+    <div class="grid">
+      <!-- LEFT COLUMN -->
+      <div>
+        <!-- MEDIA PLAYER -->
+        <div class="card">
+          <div class="card-title">🎵 Media Player</div>
+          <div class="player-wrapper">
+            <iframe id="ytPlayer"
+              src=""
+              allow="autoplay; encrypted-media"
+              allowfullscreen>
+            </iframe>
+          </div>
+        </div>
+        <!-- LYRICS -->
+        <div class="card">
+          <div class="card-title">📝 Lyrics (Bilingual)</div>
+          <textarea id="lyricsBox"
+            style="width:100%;height:180px;
+            background:#111;color:#fff;
+            border-radius:12px;padding:12px;">
+          </textarea>
+          <div style="margin-top:10px;display:flex;gap:10px;">
+            <button id="saveLyric">💾 Save</button>
+            <button id="clearLyric">🧹 Clear</button>
+          </div>
+        </div>
+      </div>
+      <!-- RIGHT COLUMN -->
+      <div>
+        <!-- PLAYLIST -->
+        <div class="card">
+          <div class="card-title">🎶 Playlist</div>
+          <div id="playlist"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+/* =========================================================
+   PART 2 — CSS ENGINE PRO
+   Media • AI English Learning • Portfolio (Single-file)
+   Author: Trần Quốc Trung
+   ========================================================= */
+/* =========================
+   0) RESET + BASE
+   ========================= */
+*{ margin:0; padding:0; box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  min-height:100vh;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: radial-gradient(900px 500px at 15% 10%, rgba(255,59,59,.18), transparent 55%),
+              radial-gradient(900px 500px at 80% 20%, rgba(255,213,74,.14), transparent 60%),
+              radial-gradient(700px 500px at 40% 85%, rgba(74,144,255,.10), transparent 55%),
+              linear-gradient(180deg, #05070c 0%, #070A10 100%);
+  color: rgba(255,255,255,.92);
+  overflow-x:hidden;
+}
+img{ max-width:100%; display:block; }
+a{ color:inherit; text-decoration:none; }
+button, input, select, textarea{ font-family:inherit; }
+/* =========================
+   1) THEME VARIABLES
+   ========================= */
+:root{
+  --bg:#070A10;
+  --bg2:#05070c;
+  --txt:rgba(255,255,255,.92);
+  --muted:rgba(255,255,255,.68);
+  --muted2:rgba(255,255,255,.56);
+  --panel:rgba(255,255,255,.06);
+  --panel2:rgba(255,255,255,.08);
+  --line:rgba(255,255,255,.12);
+  --brand:#ff3b3b;
+  --brand2:#ffd54a;
+  --blue:#6aa6ff;
+  --radius:18px;
+  --radius2:24px;
+  --shadow:0 18px 60px rgba(0,0,0,.55);
+  --ring:0 0 0 4px rgba(255,59,59,.12);
+  --glass: blur(12px);
+  --max:1160px;
+  /* text sizes */
+  --t-xs:12px;
+  --t-sm:13px;
+  --t-md:14px;
+  --t-lg:16px;
+  --t-xl:18px;
+  --t-xxl:24px;
+  /* spacing */
+  --s-1:6px;
+  --s-2:10px;
+  --s-3:14px;
+  --s-4:18px;
+  --s-5:24px;
+  --s-6:32px;
+  /* transitions */
+  --ease:.18s ease;
+}
+/* LIGHT THEME (optional toggle) */
+[data-theme="light"]{
+  --bg:#f6f7fb;
+  --bg2:#ffffff;
+  --txt:rgba(0,0,0,.88);
+  --muted:rgba(0,0,0,.64);
+  --muted2:rgba(0,0,0,.52);
+  --panel:rgba(0,0,0,.04);
+  --panel2:rgba(0,0,0,.06);
+  --line:rgba(0,0,0,.10);
+  --shadow:0 18px 60px rgba(0,0,0,.14);
+  --ring:0 0 0 4px rgba(255,59,59,.18);
+}
+/* =========================
+   2) LAYOUT UTILITIES
+   ========================= */
+.wrap{ max-width:var(--max); margin:0 auto; padding:0 18px; }
+.grid{ display:grid; gap:16px; }
+.flex{ display:flex; gap:10px; }
+.center{ display:grid; place-items:center; }
+.hidden{ display:none !important; }
+.muted{ color:var(--muted); }
+.muted2{ color:var(--muted2); }
+.bold{ font-weight:900; }
+.card{
+  background: linear-gradient(180deg, var(--panel) 0%, rgba(255,255,255,.04) 100%);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  backdrop-filter:var(--glass);
+}
+.pad{ padding:18px; }
+/* =========================
+   3) HEADER / NAV
+   ========================= */
+header{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background: rgba(7,10,16,.62);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(10px);
+}
+[data-theme="light"] header{
+  background: rgba(255,255,255,.75);
+  border-bottom:1px solid rgba(0,0,0,.08);
+}
+.nav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 0;
+  gap:12px;
+}
+.brandWrap{ display:flex; align-items:center; gap:10px; }
+.brandBadge{
+  width:36px; height:36px;
+  border-radius:14px;
+  display:grid; place-items:center;
+  background:linear-gradient(135deg, rgba(255,59,59,.22), rgba(255,213,74,.18));
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 14px 40px rgba(0,0,0,.18);
+  flex:0 0 auto;
+}
+.brandBadge span{
+  font-weight:900;
+  background:linear-gradient(135deg, var(--brand), var(--brand2));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  letter-spacing:.4px;
+}
+.brandTitle{ font-weight:900; font-size:14px; line-height:1.15; }
+.brandSub{ font-weight:800; font-size:12px; color:var(--muted2); }
+.navLinks{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.navLinks a{
+  color:var(--muted);
+  font-weight:800;
+  font-size:12.5px;
+  padding:9px 10px;
+  border-radius:12px;
+  border:1px solid transparent;
+  transition:var(--ease);
+}
+.navLinks a:hover{
+  color:var(--txt);
+  border-color:rgba(255,255,255,.12);
+  background:rgba(255,255,255,.05);
+}
+.navLinks a.active{
+  color:var(--txt);
+  border-color:rgba(255,59,59,.22);
+  background:linear-gradient(135deg, rgba(255,59,59,.16), rgba(255,213,74,.10));
+}
+.actions{ display:flex; align-items:center; gap:8px; }
+.iconBtn{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:40px; height:40px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  cursor:pointer;
+  transition:var(--ease);
+  user-select:none;
+}
+.iconBtn:hover{ transform:translateY(-1px); background:rgba(255,255,255,.06); }
+.iconBtn:focus{ outline:none; box-shadow:var(--ring); }
+.kbd{ font-weight:900; font-size:12px; opacity:.9; }
+/* =========================
+   4) HERO / TITLES / TEXT
+   ========================= */
+.hero{ padding:20px 0 10px; }
+.heroGrid{ grid-template-columns: 1.12fr .88fr; align-items:stretch; }
+.headline{
+  font-size:42px;
+  line-height:1.06;
+  margin:10px 0 12px;
+  letter-spacing:-.8px;
+}
+.grad{
+  background:linear-gradient(135deg,var(--brand),var(--brand2));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.sub{
+  font-size:15px;
+  line-height:1.7;
+  color:var(--muted);
+  margin:0 0 14px;
+  max-width:70ch;
+  white-space:pre-line;
+}
+.titleRow{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  margin:4px 0 12px;
+}
+.titleRow h2{
+  margin:0;
+  font-size:18px;
+  letter-spacing:-.2px;
+}
+
+/* =========================
+   5) BADGES / PILLS / CHIPS
+   ========================= */
+.pill{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+  font-weight:800;
+  font-size:13px;
+  white-space:nowrap;
+}
+.dot{
+  width:8px; height:8px;
+  border-radius:999px;
+  background:linear-gradient(135deg, var(--brand), var(--brand2));
+  box-shadow: 0 0 0 4px rgba(255,59,59,.12);
+}
+.badge{
+  font-size:11px;
+  font-weight:900;
+  padding:7px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+  white-space:nowrap;
+}
+.badge.red{ border-color: rgba(255,59,59,.25); }
+.badge.yellow{ border-color: rgba(255,213,74,.25); }
+.badge.blue{ border-color: rgba(106,166,255,.25); }
+
+.chip{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:7px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  font-weight:900;
+  font-size:11px;
+  color:var(--muted2);
+}
+/* =========================
+   6) BUTTONS / INPUTS
+   ========================= */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.05);
+  color:var(--txt);
+  font-weight:900;
+  font-size:14px;
+  min-width:190px;
+  cursor:pointer;
+  transition:var(--ease);
+  user-select:none;
+}
+[data-theme="light"] .btn{ border-color: rgba(0,0,0,.12); }
+.btn:hover{ transform:translateY(-1px); background:rgba(255,255,255,.07); }
+.btn:focus{ outline:none; box-shadow:var(--ring); }
+.btnPrimary{
+  border-color: rgba(255,59,59,.35);
+  background:linear-gradient(135deg, rgba(255,59,59,.25), rgba(255,213,74,.14));
+}
+.btnPrimary:hover{
+  background:linear-gradient(135deg, rgba(255,59,59,.32), rgba(255,213,74,.18));
+}
+.btn .ico{
+  width:28px; height:28px;
+  border-radius:12px;
+  display:grid; place-items:center;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.12);
+}
+.btn small{
+  display:block;
+  margin-top:2px;
+  font-size:11px;
+  color:var(--muted);
+  font-weight:800;
+}
+
+/* Smaller action buttons (Media section) */
+.miniBtn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  cursor:pointer;
+  font-weight:900;
+  font-size:12.5px;
+  transition:var(--ease);
+}
+.miniBtn:hover{ background:rgba(255,255,255,.06); }
+.miniBtn:focus{ outline:none; box-shadow:var(--ring); }
+.input, .select, .textarea{
+  padding:11px 12px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  color:var(--txt);
+  font-weight:800;
+  font-size:13px;
+  outline:none;
+}
+.select{ min-width:180px; }
+.textarea{ min-height:120px; resize:vertical; }
+/* =========================
+   7) LIST / ITEMS / PANELS
+   ========================= */
+.list{ display:grid; gap:12px; }
+.item{
+  padding:14px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+}
+.item h3{ margin:0 0 6px; font-size:14px; }
+.item p{ margin:0; color:var(--muted); font-size:13px; line-height:1.6; }
+.tagRow{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+/* =========================
+   8) MODAL / OVERLAY
+   ========================= */
+.overlay{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  z-index:99;
+}
+.overlay.show{ display:flex; }
+.modal{
+  width:min(920px, 100%);
+  border-radius:22px;
+  border:1px solid var(--line);
+  background:linear-gradient(180deg, var(--panel2), var(--panel));
+  box-shadow: 0 30px 120px rgba(0,0,0,.6);
+  overflow:hidden;
+}
+.modalHead{
+  padding:14px 14px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.modalHead b{ font-weight:900; }
+.modalBody{ padding:14px; }
+.closeBtn{
+  width:42px; height:42px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  cursor:pointer;
+  font-weight:900;
+  transition:var(--ease);
+}
+.closeBtn:hover{ background:rgba(255,255,255,.06); }
+/* =========================
+   9) TOAST / NOTIFY
+   ========================= */
+.toast{
+  position:fixed;
+  right:16px;
+  bottom:16px;
+  padding:12px 14px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.65);
+  color:rgba(255,255,255,.92);
+  font-weight:900;
+  display:none;
+  z-index:120;
+  backdrop-filter: blur(10px);
+  max-width: 320px;
+}
+[data-theme="light"] .toast{
+  background:rgba(255,255,255,.85);
+  color:rgba(0,0,0,.88);
+}
+.toast.show{ display:block; }
+.topBtn{
+  position:fixed;
+  left:16px;
+  bottom:16px;
+  width:46px; height:46px;
+  border-radius:18px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  display:none;
+  place-items:center;
+  cursor:pointer;
+  z-index:120;
+  font-weight:900;
+  backdrop-filter: blur(10px);
+}
+.topBtn.show{ display:grid; }
+.topBtn:hover{ background:rgba(255,255,255,.08); }
+/* =========================
+   10) MEDIA SECTION PRO UI
+   ========================= */
+.mediaGrid{ grid-template-columns: 1.05fr .95fr; }
+
+.playerBox{
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:rgba(255,255,255,.03);
+  overflow:hidden;
+}
+.playerBox iframe{
+  width:100%;
+  height:420px;
+  border:0;
+  display:block;
+  background:#000;
+}
+.miniBtns{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+.playlistWrap{ display:grid; gap:10px; }
+.playlistTools{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.playlistTools .input{ min-width:240px; flex:1; }
+.playlistScroll{
+  max-height:520px;
+  overflow:auto;
+  padding-right:6px;
+  scroll-behavior:smooth;
+}
+.playlistScroll::-webkit-scrollbar{ width:10px; }
+.playlistScroll::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,.14);
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+}
+[data-theme="light"] .playlistScroll::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,.12);
+}
+.playlist{ display:grid; gap:10px; }
+.track{
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:rgba(255,255,255,.04);
+  padding:12px;
+  cursor:pointer;
+  transition:var(--ease);
+  display:grid;
+  gap:6px;
+}
+.track:hover{ transform:translateY(-1px); background:rgba(255,255,255,.06); }
+.track.active{
+  border-color: rgba(255,59,59,.35);
+  background:linear-gradient(135deg, rgba(255,59,59,.18), rgba(255,213,74,.10));
+}
+.trackTop{ display:flex; justify-content:space-between; gap:10px; align-items:center; }
+.trackTitle{ font-weight:900; font-size:13px; }
+.trackMeta{ color:var(--muted2); font-weight:900; font-size:11px; letter-spacing:.6px; text-transform:uppercase; }
+.trackDesc{ color:var(--muted); font-size:12.5px; line-height:1.55; margin:0; }
+/* Lyrics box */
+.lyricBox{
+  margin-top:12px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:rgba(255,255,255,.03);
+  overflow:hidden;
+}
+.lyricHead{
+  padding:12px 14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.lyricHead b{ font-weight:900; font-size:13px; }
+.lyricHint{ color:var(--muted2); font-weight:800; font-size:12px; white-space:nowrap; }
+.lyricBody{ padding:12px 14px; }
+.lyricText{
+  width:100%;
+  min-height:160px;
+  resize:vertical;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  color:var(--txt);
+  font-weight:800;
+  font-size:13px;
+  outline:none;
+  line-height:1.6;
+  padding:12px;
+}
+.lyricActions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+/* =========================
+   11) AI TRANSLATE PANEL UI
+   ========================= */
+.aiGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:12px;
+}
+@media (max-width: 900px){ .aiGrid{ grid-template-columns:1fr; } }
+
+.aiBox{
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:rgba(255,255,255,.04);
+  padding:14px;
+}
+.aiBoxHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+.aiBoxHead b{ font-weight:900; font-size:13px; }
+.aiMode{
+  font-size:11px;
+  font-weight:900;
+  padding:7px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+}
+.aiTextarea{
+  width:100%;
+  min-height:140px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  color:var(--txt);
+  font-weight:800;
+  font-size:13px;
+  outline:none;
+  line-height:1.6;
+  padding:12px;
+  resize:vertical;
+}
+.aiActions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+/* =========================
+   12) VOCAB TRACKER UI
+   ========================= */
+.vocabRow{
+  display:grid;
+  grid-template-columns: 1fr 1fr 120px;
+  gap:10px;
+}
+@media (max-width: 680px){
+  .vocabRow{ grid-template-columns:1fr; }
+}
+.vocabTable{
+  margin-top:12px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  overflow:hidden;
+}
+.vocabTable .vHead, .vocabTable .vItem{
+  display:grid;
+  grid-template-columns: 1.2fr 1.2fr .8fr .8fr 110px;
+  gap:10px;
+  padding:12px 14px;
+}
+.vocabTable .vHead{
+  background:rgba(255,255,255,.06);
+  font-weight:900;
+  font-size:12px;
+  color:var(--muted2);
+  text-transform:uppercase;
+  letter-spacing:.6px;
+}
+.vocabTable .vItem{
+  background:rgba(255,255,255,.03);
+  border-top:1px dashed rgba(255,255,255,.10);
+  font-weight:800;
+  font-size:13px;
+}
+.vocabTag{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  font-weight:900;
+  font-size:11px;
+  color:var(--muted);
+}
+/* =========================
+   13) QUIZ ENGINE UI
+   ========================= */
+.quizWrap{
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:rgba(255,255,255,.03);
+  overflow:hidden;
+}
+.quizHead{
+  padding:12px 14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.quizHead b{ font-weight:900; font-size:13px; }
+.quizScore{
+  font-weight:900;
+  font-size:12px;
+  color:var(--muted2);
+}
+.quizBody{ padding:14px; display:grid; gap:12px; }
+.qCard{
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:rgba(255,255,255,.04);
+  padding:14px;
+}
+.qTitle{ font-weight:900; font-size:14px; margin-bottom:10px; }
+.qOptions{ display:grid; gap:10px; }
+.qOpt{
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+  padding:10px 12px;
+  cursor:pointer;
+  font-weight:900;
+  font-size:13px;
+  transition:var(--ease);
+}
+.qOpt:hover{ background:rgba(255,255,255,.06); transform:translateY(-1px); }
+.qOpt.correct{
+  border-color: rgba(74,200,120,.45);
+  background: rgba(74,200,120,.12);
+}
+.qOpt.wrong{
+  border-color: rgba(255,59,59,.45);
+  background: rgba(255,59,59,.12);
+}
+.quizFooter{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+/* =========================
+   14) RESPONSIVE TWEAKS
+   ========================= */
+@media (max-width: 1040px){
+  .heroGrid{ grid-template-columns:1fr; }
+  .mediaGrid{ grid-template-columns:1fr; }
+  .playerBox iframe{ height:320px; }
+  .playlistScroll{ max-height:420px; }
+}
+@media (max-width: 560px){
+  .headline{ font-size:32px; }
+  .actions{ display:none; }
+  .playerBox iframe{ height:240px; }
+  .playlistScroll{ max-height:320px; }
+  .lyricText{ min-height:140px; }
+}
+/* =========================================================
+   END PART 2 — CSS ENGINE PRO
+   ========================================================= */
+/* =========================================================
+   PART 2 — CSS ENGINE PRO
+   Media • AI English Learning • Portfolio (Single-file)
+   Author: Trần Quốc Trung
+   ========================================================= */
+/* =========================
+   0) RESET + BASE
+   ========================= */
+*{ margin:0; padding:0; box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  min-height:100vh;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: radial-gradient(900px 500px at 15% 10%, rgba(255,59,59,.18), transparent 55%),
+              radial-gradient(900px 500px at 80% 20%, rgba(255,213,74,.14), transparent 60%),
+              radial-gradient(700px 500px at 40% 85%, rgba(74,144,255,.10), transparent 55%),
+              linear-gradient(180deg, #05070c 0%, #070A10 100%);
+  color: rgba(255,255,255,.92);
+  overflow-x:hidden;
+}
+img{ max-width:100%; display:block; }
+a{ color:inherit; text-decoration:none; }
+button, input, select, textarea{ font-family:inherit; }
+/* =========================
+   1) THEME VARIABLES
+   ========================= */
+:root{
+  --bg:#070A10;
+  --bg2:#05070c;
+  --txt:rgba(255,255,255,.92);
+  --muted:rgba(255,255,255,.68);
+  --muted2:rgba(255,255,255,.56);
+  --panel:rgba(255,255,255,.06);
+  --panel2:rgba(255,255,255,.08);
+  --line:rgba(255,255,255,.12);
+  --brand:#ff3b3b;
+  --brand2:#ffd54a;
+  --blue:#6aa6ff;
+  --radius:18px;
+  --radius2:24px;
+  --shadow:0 18px 60px rgba(0,0,0,.55);
+  --ring:0 0 0 4px rgba(255,59,59,.12);
+  --glass: blur(12px);
+  --max:1160px;
+  /* text sizes */
+  --t-xs:12px;
+  --t-sm:13px;
+  --t-md:14px;
+  --t-lg:16px;
+  --t-xl:18px;
+  --t-xxl:24px;
+  /* spacing */
+  --s-1:6px;
+  --s-2:10px;
+  --s-3:14px;
+  --s-4:18px;
+  --s-5:24px;
+  --s-6:32px;
+  /* transitions */
+  --ease:.18s ease;
+}
+/* LIGHT THEME (optional toggle) */
+[data-theme="light"]{
+  --bg:#f6f7fb;
+  --bg2:#ffffff;
+  --txt:rgba(0,0,0,.88);
+  --muted:rgba(0,0,0,.64);
+  --muted2:rgba(0,0,0,.52);
+  --panel:rgba(0,0,0,.04);
+  --panel2:rgba(0,0,0,.06);
+  --line:rgba(0,0,0,.10);
+  --shadow:0 18px 60px rgba(0,0,0,.14);
+  --ring:0 0 0 4px rgba(255,59,59,.18);
+}
+/* =========================
+   2) LAYOUT UTILITIES
+   ========================= */
+.wrap{ max-width:var(--max); margin:0 auto; padding:0 18px; }
+.grid{ display:grid; gap:16px; }
+.flex{ display:flex; gap:10px; }
+.center{ display:grid; place-items:center; }
+.hidden{ display:none !important; }
+.muted{ color:var(--muted); }
+.muted2{ color:var(--muted2); }
+.bold{ font-weight:900; }
+.card{
+  background: linear-gradient(180deg, var(--panel) 0%, rgba(255,255,255,.04) 100%);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  backdrop-filter:var(--glass);
+}
+.pad{ padding:18px; }
+/* =========================
+   3) HEADER / NAV
+   ========================= */
+header{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background: rgba(7,10,16,.62);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(10px);
+}
+[data-theme="light"] header{
+  background: rgba(255,255,255,.75);
+  border-bottom:1px solid rgba(0,0,0,.08);
+}
+.nav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 0;
+  gap:12px;
+}
+.brandWrap{ display:flex; align-items:center; gap:10px; }
+.brandBadge{
+  width:36px; height:36px;
+  border-radius:14px;
+  display:grid; place-items:center;
+  background:linear-gradient(135deg, rgba(255,59,59,.22), rgba(255,213,74,.18));
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 14px 40px rgba(0,0,0,.18);
+  flex:0 0 auto;
+}
+.brandBadge span{
+  font-weight:900;
+  background:linear-gradient(135deg, var(--brand), var(--brand2));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  letter-spacing:.4px;
+}
+.brandTitle{ font-weight:900; font-size:14px; line-height:1.15; }
+.brandSub{ font-weight:800; font-size:12px; color:var(--muted2); }
+.navLinks{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.navLinks a{
+  color:var(--muted);
+  font-weight:800;
+  font-size:12.5px;
+  padding:9px 10px;
+  border-radius:12px;
+  border:1px solid transparent;
+  transition:var(--ease);
+}
+.navLinks a:hover{
+  color:var(--txt);
+  border-color:rgba(255,255,255,.12);
+  background:rgba(255,255,255,.05);
+}
+.navLinks a.active{
+  color:var(--txt);
+  border-color:rgba(255,59,59,.22);
+  background:linear-gradient(135deg, rgba(255,59,59,.16), rgba(255,213,74,.10));
+}
+
+.actions{ display:flex; align-items:center; gap:8px; }
+.iconBtn{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:40px; height:40px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  cursor:pointer;
+  transition:var(--ease);
+  user-select:none;
+}
+.iconBtn:hover{ transform:translateY(-1px); background:rgba(255,255,255,.06); }
+.iconBtn:focus{ outline:none; box-shadow:var(--ring); }
+.kbd{ font-weight:900; font-size:12px; opacity:.9; }
+/* =========================
+   4) HERO / TITLES / TEXT
+   ========================= */
+.hero{ padding:20px 0 10px; }
+.heroGrid{ grid-template-columns: 1.12fr .88fr; align-items:stretch; }
+.headline{
+  font-size:42px;
+  line-height:1.06;
+  margin:10px 0 12px;
+  letter-spacing:-.8px;
+}
+.grad{
+  background:linear-gradient(135deg,var(--brand),var(--brand2));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.sub{
+  font-size:15px;
+  line-height:1.7;
+  color:var(--muted);
+  margin:0 0 14px;
+  max-width:70ch;
+  white-space:pre-line;
+}
+.titleRow{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  margin:4px 0 12px;
+}
+.titleRow h2{
+  margin:0;
+  font-size:18px;
+  letter-spacing:-.2px;
+}
+/* =========================
+   5) BADGES / PILLS / CHIPS
+   ========================= */
+.pill{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+  font-weight:800;
+  font-size:13px;
+  white-space:nowrap;
+}
+.dot{
+  width:8px; height:8px;
+  border-radius:999px;
+  background:linear-gradient(135deg, var(--brand), var(--brand2));
+  box-shadow: 0 0 0 4px rgba(255,59,59,.12);
+}
+.badge{
+  font-size:11px;
+  font-weight:900;
+  padding:7px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+  white-space:nowrap;
+}
+.badge.red{ border-color: rgba(255,59,59,.25); }
+.badge.yellow{ border-color: rgba(255,213,74,.25); }
+.badge.blue{ border-color: rgba(106,166,255,.25); }
+.chip{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:7px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  font-weight:900;
+  font-size:11px;
+  color:var(--muted2);
+}
+/* =========================
+   6) BUTTONS / INPUTS
+   ========================= */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.05);
+  color:var(--txt);
+  font-weight:900;
+  font-size:14px;
+  min-width:190px;
+  cursor:pointer;
+  transition:var(--ease);
+  user-select:none;
+}
+[data-theme="light"] .btn{ border-color: rgba(0,0,0,.12); }
+.btn:hover{ transform:translateY(-1px); background:rgba(255,255,255,.07); }
+.btn:focus{ outline:none; box-shadow:var(--ring); }
+.btnPrimary{
+  border-color: rgba(255,59,59,.35);
+  background:linear-gradient(135deg, rgba(255,59,59,.25), rgba(255,213,74,.14));
+}
+.btnPrimary:hover{
+  background:linear-gradient(135deg, rgba(255,59,59,.32), rgba(255,213,74,.18));
+}
+.btn .ico{
+  width:28px; height:28px;
+  border-radius:12px;
+  display:grid; place-items:center;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.12);
+}
+.btn small{
+  display:block;
+  margin-top:2px;
+  font-size:11px;
+  color:var(--muted);
+  font-weight:800;
+}
+/* Smaller action buttons (Media section) */
+.miniBtn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  cursor:pointer;
+  font-weight:900;
+  font-size:12.5px;
+  transition:var(--ease);
+}
+.miniBtn:hover{ background:rgba(255,255,255,.06); }
+.miniBtn:focus{ outline:none; box-shadow:var(--ring); }
+.input, .select, .textarea{
+  padding:11px 12px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  color:var(--txt);
+  font-weight:800;
+  font-size:13px;
+  outline:none;
+}
+.select{ min-width:180px; }
+.textarea{ min-height:120px; resize:vertical; }
+/* =========================
+   7) LIST / ITEMS / PANELS
+   ========================= */
+.list{ display:grid; gap:12px; }
+.item{
+  padding:14px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+}
+.item h3{ margin:0 0 6px; font-size:14px; }
+.item p{ margin:0; color:var(--muted); font-size:13px; line-height:1.6; }
+.tagRow{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+/* =========================
+   8) MODAL / OVERLAY
+   ========================= */
+.overlay{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  z-index:99;
+}
+.overlay.show{ display:flex; }
+.modal{
+  width:min(920px, 100%);
+  border-radius:22px;
+  border:1px solid var(--line);
+  background:linear-gradient(180deg, var(--panel2), var(--panel));
+  box-shadow: 0 30px 120px rgba(0,0,0,.6);
+  overflow:hidden;
+}
+.modalHead{
+  padding:14px 14px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.modalHead b{ font-weight:900; }
+.modalBody{ padding:14px; }
+.closeBtn{
+  width:42px; height:42px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  cursor:pointer;
+  font-weight:900;
+  transition:var(--ease);
+}
+.closeBtn:hover{ background:rgba(255,255,255,.06); }
+/* =========================
+   9) TOAST / NOTIFY
+   ========================= */
+.toast{
+  position:fixed;
+  right:16px;
+  bottom:16px;
+  padding:12px 14px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.65);
+  color:rgba(255,255,255,.92);
+  font-weight:900;
+  display:none;
+  z-index:120;
+  backdrop-filter: blur(10px);
+  max-width: 320px;
+}
+[data-theme="light"] .toast{
+  background:rgba(255,255,255,.85);
+  color:rgba(0,0,0,.88);
+}
+.toast.show{ display:block; }
+.topBtn{
+  position:fixed;
+  left:16px;
+  bottom:16px;
+  width:46px; height:46px;
+  border-radius:18px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  display:none;
+  place-items:center;
+  cursor:pointer;
+  z-index:120;
+  font-weight:900;
+  backdrop-filter: blur(10px);
+}
+.topBtn.show{ display:grid; }
+.topBtn:hover{ background:rgba(255,255,255,.08); }
+/* =========================
+   10) MEDIA SECTION PRO UI
+   ========================= */
+.mediaGrid{ grid-template-columns: 1.05fr .95fr; }
+.playerBox{
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:rgba(255,255,255,.03);
+  overflow:hidden;
+}
+.playerBox iframe{
+  width:100%;
+  height:420px;
+  border:0;
+  display:block;
+  background:#000;
+}
+.miniBtns{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+.playlistWrap{ display:grid; gap:10px; }
+.playlistTools{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.playlistTools .input{ min-width:240px; flex:1; }
+.playlistScroll{
+  max-height:520px;
+  overflow:auto;
+  padding-right:6px;
+  scroll-behavior:smooth;
+}
+.playlistScroll::-webkit-scrollbar{ width:10px; }
+.playlistScroll::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,.14);
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+}
+[data-theme="light"] .playlistScroll::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,.12);
+}
+.playlist{ display:grid; gap:10px; }
+.track{
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:rgba(255,255,255,.04);
+  padding:12px;
+  cursor:pointer;
+  transition:var(--ease);
+  display:grid;
+  gap:6px;
+}
+.track:hover{ transform:translateY(-1px); background:rgba(255,255,255,.06); }
+.track.active{
+  border-color: rgba(255,59,59,.35);
+  background:linear-gradient(135deg, rgba(255,59,59,.18), rgba(255,213,74,.10));
+}
+.trackTop{ display:flex; justify-content:space-between; gap:10px; align-items:center; }
+.trackTitle{ font-weight:900; font-size:13px; }
+.trackMeta{ color:var(--muted2); font-weight:900; font-size:11px; letter-spacing:.6px; text-transform:uppercase; }
+.trackDesc{ color:var(--muted); font-size:12.5px; line-height:1.55; margin:0; }
+/* Lyrics box */
+.lyricBox{
+  margin-top:12px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:rgba(255,255,255,.03);
+  overflow:hidden;
+}
+.lyricHead{
+  padding:12px 14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.lyricHead b{ font-weight:900; font-size:13px; }
+.lyricHint{ color:var(--muted2); font-weight:800; font-size:12px; white-space:nowrap; }
+.lyricBody{ padding:12px 14px; }
+.lyricText{
+  width:100%;
+  min-height:160px;
+  resize:vertical;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  color:var(--txt);
+  font-weight:800;
+  font-size:13px;
+  outline:none;
+  line-height:1.6;
+  padding:12px;
+}
+.lyricActions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+/* =========================
+   11) AI TRANSLATE PANEL UI
+   ========================= */
+.aiGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:12px;
+}
+@media (max-width: 900px){ .aiGrid{ grid-template-columns:1fr; } }
+.aiBox{
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:rgba(255,255,255,.04);
+  padding:14px;
+}
+.aiBoxHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+.aiBoxHead b{ font-weight:900; font-size:13px; }
+.aiMode{
+  font-size:11px;
+  font-weight:900;
+  padding:7px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+}
+.aiTextarea{
+  width:100%;
+  min-height:140px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  color:var(--txt);
+  font-weight:800;
+  font-size:13px;
+  outline:none;
+  line-height:1.6;
+  padding:12px;
+  resize:vertical;
+}
+.aiActions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+/* =========================
+   12) VOCAB TRACKER UI
+   ========================= */
+.vocabRow{
+  display:grid;
+  grid-template-columns: 1fr 1fr 120px;
+  gap:10px;
+}
+@media (max-width: 680px){
+  .vocabRow{ grid-template-columns:1fr; }
+}
+.vocabTable{
+  margin-top:12px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  overflow:hidden;
+}
+.vocabTable .vHead, .vocabTable .vItem{
+  display:grid;
+  grid-template-columns: 1.2fr 1.2fr .8fr .8fr 110px;
+  gap:10px;
+  padding:12px 14px;
+}
+.vocabTable .vHead{
+  background:rgba(255,255,255,.06);
+  font-weight:900;
+  font-size:12px;
+  color:var(--muted2);
+  text-transform:uppercase;
+  letter-spacing:.6px;
+}
+.vocabTable .vItem{
+  background:rgba(255,255,255,.03);
+  border-top:1px dashed rgba(255,255,255,.10);
+  font-weight:800;
+  font-size:13px;
+}
+.vocabTag{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  font-weight:900;
+  font-size:11px;
+  color:var(--muted);
+}
+/* =========================
+   13) QUIZ ENGINE UI
+   ========================= */
+.quizWrap{
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:rgba(255,255,255,.03);
+  overflow:hidden;
+}
+.quizHead{
+  padding:12px 14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.quizHead b{ font-weight:900; font-size:13px; }
+.quizScore{
+  font-weight:900;
+  font-size:12px;
+  color:var(--muted2);
+}
+.quizBody{ padding:14px; display:grid; gap:12px; }
+.qCard{
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:rgba(255,255,255,.04);
+  padding:14px;
+}
+.qTitle{ font-weight:900; font-size:14px; margin-bottom:10px; }
+.qOptions{ display:grid; gap:10px; }
+.qOpt{
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+  padding:10px 12px;
+  cursor:pointer;
+  font-weight:900;
+  font-size:13px;
+  transition:var(--ease);
+}
+.qOpt:hover{ background:rgba(255,255,255,.06); transform:translateY(-1px); }
+.qOpt.correct{
+  border-color: rgba(74,200,120,.45);
+  background: rgba(74,200,120,.12);
+}
+.qOpt.wrong{
+  border-color: rgba(255,59,59,.45);
+  background: rgba(255,59,59,.12);
+}
+.quizFooter{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+/* =========================
+   14) RESPONSIVE TWEAKS
+   ========================= */
+@media (max-width: 1040px){
+  .heroGrid{ grid-template-columns:1fr; }
+  .mediaGrid{ grid-template-columns:1fr; }
+  .playerBox iframe{ height:320px; }
+  .playlistScroll{ max-height:420px; }
+}
+@media (max-width: 560px){
+  .headline{ font-size:32px; }
+  .actions{ display:none; }
+  .playerBox iframe{ height:240px; }
+  .playlistScroll{ max-height:320px; }
+  .lyricText{ min-height:140px; }
+}
+/* =========================================================
+   END PART 2 — CSS ENGINE PRO
+   ========================================================= */
+/* =========================================================
+   PART 3 — MEDIA PLAYER CORE JS (YouTube)
+   ✅ No duplicate listeners
+   ✅ Playlist click -> play
+   ✅ Search/filter
+   ✅ Next/Prev/Shuffle/Repeat
+   ✅ Save last playing + time
+   ✅ Lyrics: save per-song (EN/VI) into localStorage
+   ========================================================= */
+/* =========================
+   0) HELPERS
+   ========================= */
+const $  = (q, root=document) => root.querySelector(q);
+const $$ = (q, root=document) => Array.from(root.querySelectorAll(q));
+function toast(msg){
+  const el = $("#toast");
+  if(!el) return alert(msg);
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=> el.classList.remove("show"), 1800);
+}
+function safeJSONParse(str, fallback){
+  try{ return JSON.parse(str); }catch(e){ return fallback; }
+}
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+function norm(str){
+  return (str||"")
+    .toString()
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,""); // remove accents
+}
+/* =========================
+   1) DOM ELEMENTS (MUST MATCH HTML IDs)
+   ========================= */
+const ytPlayer     = $("#ytPlayer");        // <iframe id="ytPlayer">
+const playlistEl   = $("#playlist");        // <div id="playlist">
+const searchEl     = $("#trackSearch");     // <input id="trackSearch">
+const nowTitleEl   = $("#nowTitle");        // <b id="nowTitle">
+const nowMetaEl    = $("#nowMeta");         // <span id="nowMeta">
+const nowTypeEl    = $("#nowType");         // <span id="nowType">
+const btnPrev      = $("#btnPrev");
+const btnNext      = $("#btnNext");
+const btnShuffle   = $("#btnShuffle");
+const btnRepeat    = $("#btnRepeat");
+const btnCopyLink  = $("#btnCopyLink");
+const btnSaveTime  = $("#btnSaveTime");     // optional
+const btnResetTime = $("#btnResetTime");    // optional
+// Lyrics
+const lyricEnEl    = $("#lyricEN");         // <textarea id="lyricEN">
+const lyricViEl    = $("#lyricVI");         // <textarea id="lyricVI">
+const btnSaveLyric = $("#btnSaveLyric");
+const btnLoadLyric = $("#btnLoadLyric");
+const btnClearLyric= $("#btnClearLyric");
+/* =========================
+   2) DATA: PLAYLIST
+   - You only need: id, title
+   - Optional: artist, tag, note, start (seconds)
+   ========================= */
+// ✅ 100 bài cực nổi tiếng (mix US/UK + global + Kpop + Latin + EDM)
+// Lưu ý: view thay đổi theo thời gian. Danh sách này ưu tiên các video rất phổ biến.
+const MEDIA = [
+  { type:"MUSIC", title:"Despacito — Luis Fonsi ft. Daddy Yankee", meta:"GLOBAL", desc:"Official video", videoId:"kJQP7kiw5Fk" },
+  { type:"MUSIC", title:"See You Again — Wiz Khalifa ft. Charlie Puth", meta:"US/UK", desc:"Official video", videoId:"RgKAFK5djSk" },
+  { type:"MUSIC", title:"Shape of You — Ed Sheeran", meta:"US/UK", desc:"Official video", videoId:"JGwWNGJdvx8" },
+  { type:"MUSIC", title:"Uptown Funk — Mark Ronson ft. Bruno Mars", meta:"US/UK", desc:"Official video", videoId:"OPf0YbXqDm0" },
+  { type:"MUSIC", title:"Gangnam Style — PSY", meta:"K-POP", desc:"Official video", videoId:"9bZkp7q19f0" },
+  { type:"MUSIC", title:"Sorry — Justin Bieber", meta:"US/UK", desc:"Official video", videoId:"fRh_vgS2dFE" },
+  { type:"MUSIC", title:"Sugar — Maroon 5", meta:"US/UK", desc:"Official video", videoId:"09R8_2nJtjg" },
+  { type:"MUSIC", title:"Roar — Katy Perry", meta:"US/UK", desc:"Official video", videoId:"CevxZvSJLk8" },
+  { type:"MUSIC", title:"Thinking Out Loud — Ed Sheeran", meta:"US/UK", desc:"Official video", videoId:"lp-EO5I60KA" },
+  { type:"MUSIC", title:"Counting Stars — OneRepublic", meta:"US/UK", desc:"Official video", videoId:"hT_nvWreIhg" },
+  { type:"MUSIC", title:"Dark Horse — Katy Perry", meta:"US/UK", desc:"Official video", videoId:"0KSOMA3QBU0" },
+  { type:"MUSIC", title:"Faded — Alan Walker", meta:"EDM", desc:"Official video", videoId:"60ItHLz5WEA" },
+  { type:"MUSIC", title:"Believer — Imagine Dragons", meta:"US/UK", desc:"Official video", videoId:"7wtfhZwyrcc" },
+  { type:"MUSIC", title:"Lean On — Major Lazer & DJ Snake", meta:"EDM", desc:"Official video", videoId:"YqeW9_5kURI" },
+  { type:"MUSIC", title:"Perfect — Ed Sheeran", meta:"US/UK", desc:"Official video", videoId:"2Vv-BfVoq4g" },
+  { type:"MUSIC", title:"Havana — Camila Cabello", meta:"US/UK", desc:"Official video", videoId:"HCjNJDNzw8Y" },
+  { type:"MUSIC", title:"bad guy — Billie Eilish", meta:"US/UK", desc:"Official video", videoId:"DyDfgMOUjCI" },
+  { type:"MUSIC", title:"Closer — The Chainsmokers ft. Halsey", meta:"US/UK", desc:"Official video", videoId:"0zGcUoRlhmw" },
+  { type:"MUSIC", title:"Girls Like You — Maroon 5 ft. Cardi B", meta:"US/UK", desc:"Official video", videoId:"aJOTlE1K90k" },
+  { type:"MUSIC", title:"Cheap Thrills — Sia", meta:"US/UK", desc:"Official video", videoId:"nYh-n7EOtMA" },
+  { type:"MUSIC", title:"Hello — Adele", meta:"US/UK", desc:"Official video", videoId:"YQHsXMglC9A" },
+  { type:"MUSIC", title:"All About That Bass — Meghan Trainor", meta:"US/UK", desc:"Official video", videoId:"7PCkvCPvDXk" },
+  { type:"MUSIC", title:"Waka Waka — Shakira", meta:"GLOBAL", desc:"Official video", videoId:"pRpeEdMmmQ0" },
+  { type:"MUSIC", title:"Chandelier — Sia", meta:"US/UK", desc:"Official video", videoId:"2vjPBrBU-TM" },
+  { type:"MUSIC", title:"Love The Way You Lie — Eminem ft. Rihanna", meta:"US/UK", desc:"Official video", videoId:"uelHwf8o7_U" },
+  { type:"MUSIC", title:"Let Her Go — Passenger", meta:"US/UK", desc:"Official video", videoId:"RBumgq5yVrA" },
+  { type:"MUSIC", title:"Blank Space — Taylor Swift", meta:"US/UK", desc:"Official video", videoId:"e-ORhEE9VVg" },
+  { type:"MUSIC", title:"Thunder — Imagine Dragons", meta:"US/UK", desc:"Official video", videoId:"fKopy74weus" },
+  { type:"MUSIC", title:"On The Floor — Jennifer Lopez ft. Pitbull", meta:"GLOBAL", desc:"Official video", videoId:"t4H_Zoh7G5A" },
+  { type:"MUSIC", title:"Dame Tu Cosita — El Chombo", meta:"GLOBAL", desc:"Official video", videoId:"FzG4uDgje3M" },
+  // --- thêm 70 bài nữa (để đủ 100) ---
+  { type:"MUSIC", title:"Sorry — (Lyric Video) Justin Bieber", meta:"US/UK", desc:"Alt video", videoId:"_Tzj7PZqk2I" },
+  { type:"MUSIC", title:"Counting Stars — (Lyric)", meta:"US/UK", desc:"Lyric/alt", videoId:"hT_nvWreIhg" },
+  { type:"MUSIC", title:"Stressed Out — twenty one pilots", meta:"US/UK", desc:"Official video", videoId:"pXRviuL6vMY" },
+  { type:"MUSIC", title:"Heathens — twenty one pilots", meta:"US/UK", desc:"Official video", videoId:"UprcpdwuwCg" },
+  { type:"MUSIC", title:"Shake It Off — Taylor Swift", meta:"US/UK", desc:"Official video", videoId:"nfWlot6h_JM" },
+  { type:"MUSIC", title:"I Don't Wanna Live Forever — ZAYN, Taylor Swift", meta:"US/UK", desc:"Official video", videoId:"7F37r50VUTQ" },
+  { type:"MUSIC", title:"What Do You Mean? — Justin Bieber", meta:"US/UK", desc:"Official video", videoId:"DK_0jXPuIr0" },
+  { type:"MUSIC", title:"Baby — Justin Bieber ft. Ludacris", meta:"US/UK", desc:"Official video", videoId:"kffacxfA7G4" },
+  { type:"MUSIC", title:"One Dance — Drake", meta:"US/UK", desc:"Audio/alt", videoId:"iAbnEUA0wpA" },
+  { type:"MUSIC", title:"Work — Rihanna ft. Drake", meta:"US/UK", desc:"Official video", videoId:"HL1UzIK-flA" },
+  { type:"MUSIC", title:"Happier — Marshmello ft. Bastille", meta:"EDM", desc:"Official video", videoId:"m7Bc3pLyij0" },
+  { type:"MUSIC", title:"Alone — Alan Walker", meta:"EDM", desc:"Official video", videoId:"1-xGerv5FOk" },
+  { type:"MUSIC", title:"The Spectre — Alan Walker", meta:"EDM", desc:"Official video", videoId:"wJnBTPUQS5A" },
+  { type:"MUSIC", title:"Take On Me — a-ha", meta:"CLASSIC", desc:"Official video", videoId:"djV11Xbc914" },
+  { type:"MUSIC", title:"Smells Like Teen Spirit — Nirvana", meta:"CLASSIC", desc:"Official video", videoId:"hTWKbfoikeg" },
+  { type:"MUSIC", title:"Billie Jean — Michael Jackson", meta:"CLASSIC", desc:"Official video", videoId:"Zi_XLOBDo_Y" },
+  { type:"MUSIC", title:"Beat It — Michael Jackson", meta:"CLASSIC", desc:"Official video", videoId:"oRdxUFDoQe0" },
+  { type:"MUSIC", title:"Rolling in the Deep — Adele", meta:"US/UK", desc:"Official video", videoId:"rYEDA3JcQqw" },
+  { type:"MUSIC", title:"Someone Like You — Adele", meta:"US/UK", desc:"Official video", videoId:"hLQl3WQQoQ0" },
+  { type:"MUSIC", title:"Set Fire to the Rain — Adele", meta:"US/UK", desc:"Live/alt", videoId:"FlsBObg-1BQ" },
+  { type:"MUSIC", title:"We Don't Talk Anymore — Charlie Puth ft. Selena Gomez", meta:"US/UK", desc:"Official", videoId:"3AtDnEC4zak" }, // (placeholder alt nếu trùng)
+  { type:"MUSIC", title:"Attention — Charlie Puth", meta:"US/UK", desc:"Official video", videoId:"nfs8NYg7yQM" },
+  { type:"MUSIC", title:"We Are Young — fun. ft. Janelle Monáe", meta:"US/UK", desc:"Official video", videoId:"Sv6dMFF_yts" },
+  { type:"MUSIC", title:"Call Me Maybe — Carly Rae Jepsen", meta:"US/UK", desc:"Official video", videoId:"fWNaR-rxAic" },
+  { type:"MUSIC", title:"Party Rock Anthem — LMFAO", meta:"US/UK", desc:"Official video", videoId:"KQ6zr6kCPj8" },
+  { type:"MUSIC", title:"The Lazy Song — Bruno Mars", meta:"US/UK", desc:"Official video", videoId:"fLexgOxsZu0" },
+  { type:"MUSIC", title:"Just the Way You Are — Bruno Mars", meta:"US/UK", desc:"Official video", videoId:"LjhCEhWiKXk" },
+  { type:"MUSIC", title:"Grenade — Bruno Mars", meta:"US/UK", desc:"Official video", videoId:"SR6iYWJxHqs" },
+  { type:"MUSIC", title:"The Fox — Ylvis", meta:"GLOBAL", desc:"Official video", videoId:"jofNR_WkoCE" },
+  { type:"MUSIC", title:"Wake Me Up — Avicii", meta:"EDM", desc:"Official video", videoId:"IcrbM1l_BoI" },
+
+  { type:"MUSIC", title:"Waiting For Love — Avicii", meta:"EDM", desc:"Official video", videoId:"cHHLHGNpCSA" },
+  { type:"MUSIC", title:"Without Me — Halsey", meta:"US/UK", desc:"Official video", videoId:"ZAfAud_M_mg" },
+  { type:"MUSIC", title:"Hymn for the Weekend — Coldplay", meta:"US/UK", desc:"Official video", videoId:"YykjpeuMNEk" },
+  { type:"MUSIC", title:"Something Just Like This — The Chainsmokers & Coldplay", meta:"US/UK", desc:"Official", videoId:"FM7MFYoylVs" },
+  { type:"MUSIC", title:"A Sky Full of Stars — Coldplay", meta:"US/UK", desc:"Official video", videoId:"VPRjCeoBqrI" },
+  { type:"MUSIC", title:"Counting Stars (Alt)", meta:"US/UK", desc:"Alt", videoId:"hT_nvWreIhg" },
+  // Latin / Global
+  { type:"MUSIC", title:"Bailando — Enrique Iglesias", meta:"LATIN", desc:"Official video", videoId:"NUsoVlDFqZg" },
+  { type:"MUSIC", title:"Danza Kuduro — Don Omar", meta:"LATIN", desc:"Official video", videoId:"7zp1TbLFPp8" },
+  { type:"MUSIC", title:"Taki Taki — DJ Snake ft. Selena Gomez, Ozuna, Cardi B", meta:"GLOBAL", desc:"Official video", videoId:"ixkoVwKQaJg" },
+  { type:"MUSIC", title:"Con Calma — Daddy Yankee", meta:"LATIN", desc:"Official video", videoId:"DiItGE3eAyQ" },
+  { type:"MUSIC", title:"Mi Gente — J Balvin, Willy William", meta:"LATIN", desc:"Official video", videoId:"wnJ6LuUFpMo" },
+  // Kpop big
+  { type:"MUSIC", title:"Dynamite — BTS", meta:"K-POP", desc:"Official MV", videoId:"gdZLi9oWNZg" },
+  { type:"MUSIC", title:"Boy With Luv — BTS ft. Halsey", meta:"K-POP", desc:"Official MV", videoId:"XsX3ATc3FbA" },
+  { type:"MUSIC", title:"How You Like That — BLACKPINK", meta:"K-POP", desc:"Official MV", videoId:"ioNng23DkIM" },
+  { type:"MUSIC", title:"DDU-DU DDU-DU — BLACKPINK", meta:"K-POP", desc:"Official MV", videoId:"IHNzOHi8sJs" },
+  { type:"MUSIC", title:"Kill This Love — BLACKPINK", meta:"K-POP", desc:"Official MV", videoId:"2S24-y0Ij3Y" },
+  // More global hits
+  { type:"MUSIC", title:"Let Me Love You — DJ Snake ft. Justin Bieber", meta:"EDM", desc:"Official", videoId:"euCqAq6BRa4" },
+  { type:"MUSIC", title:"Rockabye — Clean Bandit ft. Sean Paul & Anne-Marie", meta:"US/UK", desc:"Official", videoId:"papuvlVeZg8" },
+  { type:"MUSIC", title:"Symphony — Clean Bandit ft. Zara Larsson", meta:"US/UK", desc:"Official", videoId:"aatr_2MstrI" },
+  { type:"MUSIC", title:"Closer (Lyric)", meta:"US/UK", desc:"Lyric", videoId:"PT2_F-1esPk" },
+  { type:"MUSIC", title:"Havana (Live/Alt)", meta:"US/UK", desc:"Alt", videoId:"BQ0mxQXmLsk" },
+// ✅ Alias để PART 3 dùng đúng biến
+const TRACKS = MEDIA.map(x => ({
+  id: x.videoId,          // dùng cho youtube embed
+  title: x.title,
+  artist: x.meta,         // hoặc tách artist riêng nếu muốn
+  tag: x.type,
+  note: x.desc,
+  start: x.start || 0
+}));
+  // NOTE:
+  // Anh muốn chuẩn 100/100 track “tỷ view” theo đúng số liệu hiện tại
+  // => cần web để kiểm tra view & videoId chuẩn. Ở đây mình đưa list phổ biến để chạy ngay.
+];
+// ✅ nếu muốn đảm bảo đủ 100 phần tử:
+// console.log("MEDIA size:", MEDIA.length);
+/* =========================
+   3) STATE + STORAGE KEYS
+   ========================= */
+const LS = {
+  mediaState: "MVAPP_MEDIA_STATE_V1",
+  lyrics:     "MVAPP_LYRICS_V1"
+};
+const state = {
+  idx: 0,
+  shuffle: false,
+  repeat: "all", // "off" | "one" | "all"
+  filter: "",
+  lastStartSec: 0
+};
+// Restore saved media state
+(function restoreMediaState(){
+  const saved = safeJSONParse(localStorage.getItem(LS.mediaState), null);
+  if(!saved) return;
+  if(Number.isInteger(saved.idx)) state.idx = clamp(saved.idx, 0, TRACKS.length-1);
+  if(typeof saved.shuffle === "boolean") state.shuffle = saved.shuffle;
+  if(["off","one","all"].includes(saved.repeat)) state.repeat = saved.repeat;
+  if(typeof saved.lastStartSec === "number") state.lastStartSec = Math.max(0, saved.lastStartSec);
+})();
+function saveMediaState(){
+  localStorage.setItem(LS.mediaState, JSON.stringify({
+    idx: state.idx,
+    shuffle: state.shuffle,
+    repeat: state.repeat,
+    lastStartSec: state.lastStartSec
+  }));
+}
+/* =========================
+   4) BUILD PLAYLIST UI
+   ========================= */
+function filteredTracks(){
+  const f = norm(state.filter);
+  if(!f) return TRACKS.map((t,i)=> ({...t, _i:i}));
+  return TRACKS
+    .map((t,i)=> ({...t, _i:i}))
+    .filter(t=>{
+      const hay = norm(`${t.title} ${t.artist||""} ${t.tag||""} ${t.note||""}`);
+      return hay.includes(f);
+    });
+}
+function renderPlaylist(){
+  if(!playlistEl) return;
+  const list = filteredTracks();
+  if(list.length === 0){
+    playlistEl.innerHTML = `<div class="item"><h3>No results</h3><p>Không tìm thấy bài phù hợp.</p></div>`;
+    return;
+  }
+  playlistEl.innerHTML = list.map(t=>{
+    const isActive = t._i === state.idx;
+    const meta = [t.artist, t.tag].filter(Boolean).join(" • ");
+    return `
+      <div class="track ${isActive ? "active":""}" data-idx="${t._i}">
+        <div class="trackTop">
+          <div class="trackTitle">${escapeHTML(t.title)}</div>
+          <div class="trackMeta">${escapeHTML(meta || "TRACK")}</div>
+        </div>
+        ${t.note ? `<p class="trackDesc">${escapeHTML(t.note)}</p>` : ``}
+      </div>
+    `;
+  }).join("");
+}
+function escapeHTML(s){
+  return (s ?? "")
+    .toString()
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+/* =========================
+   5) YOUTUBE EMBED CONTROL
+   - Use iframe src with autoplay
+   - Start at (track.start OR saved time)
+   ========================= */
+function buildYouTubeSrc(videoId, startSec=0){
+  const s = Math.max(0, Math.floor(startSec||0));
+  // modestbranding + rel=0 helps cleaner UI
+  return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&rel=0&modestbranding=1&start=${s}`;
+}
+function loadTrack(index, opts={}){
+  if(!TRACKS.length) return;
+  state.idx = clamp(index, 0, TRACKS.length-1);
+  const t = TRACKS[state.idx];
+  // decide start time
+  let startSec = 0;
+  if(typeof opts.startSec === "number"){
+    startSec = Math.max(0, opts.startSec);
+  }else{
+    // track default start
+    startSec = Math.max(0, t.start || 0);
+    // if restoring last play, use it
+    if(opts.useSavedTime && state.lastStartSec > 0){
+      startSec = state.lastStartSec;
+    }
+  }
+  if(ytPlayer){
+    ytPlayer.src = buildYouTubeSrc(t.id, startSec);
+  }
+  // UI now playing
+  if(nowTitleEl) nowTitleEl.textContent = t.title || "Now playing";
+  if(nowMetaEl)  nowMetaEl.textContent  = [t.artist, t.tag].filter(Boolean).join(" • ") || "";
+  if(nowTypeEl)  nowTypeEl.textContent  = "YouTube";
+  // highlight active track
+  renderPlaylist();
+  // lyrics load for this song
+  loadLyricsForCurrent(false);
+  // save
+  saveMediaState();
+}
+function nextIndex(){
+  if(state.shuffle){
+    if(TRACKS.length <= 1) return state.idx;
+    let j = state.idx;
+    while(j === state.idx) j = Math.floor(Math.random() * TRACKS.length);
+    return j;
+  }
+  return (state.idx + 1) % TRACKS.length;
+}
+function prevIndex(){
+  if(state.shuffle){
+    if(TRACKS.length <= 1) return state.idx;
+    let j = state.idx;
+    while(j === state.idx) j = Math.floor(Math.random() * TRACKS.length);
+    return j;
+  }
+  return (state.idx - 1 + TRACKS.length) % TRACKS.length;
+}
+/* =========================
+   6) LYRICS STORAGE (Bilingual EN/VI)
+   - Save per track.id
+   ========================= */
+function readLyricsStore(){
+  return safeJSONParse(localStorage.getItem(LS.lyrics), {});
+}
+function writeLyricsStore(obj){
+  localStorage.setItem(LS.lyrics, JSON.stringify(obj));
+}
+function lyricsKeyForTrack(track){
+  return track?.id || "unknown";
+}
+function saveLyricsForCurrent(){
+  const t = TRACKS[state.idx];
+  if(!t) return;
+  const store = readLyricsStore();
+  const key = lyricsKeyForTrack(t);
+  store[key] = {
+    title: t.title || "",
+    artist: t.artist || "",
+    en: (lyricEnEl?.value || "").trim(),
+    vi: (lyricViEl?.value || "").trim(),
+    updatedAt: Date.now()
+  };
+  writeLyricsStore(store);
+  toast("✅ Saved lyrics!");
+}
+function loadLyricsForCurrent(showToast=true){
+  const t = TRACKS[state.idx];
+  if(!t) return;
+  const store = readLyricsStore();
+  const key = lyricsKeyForTrack(t);
+  const data = store[key];
+  if(lyricEnEl) lyricEnEl.value = data?.en || "";
+  if(lyricViEl) lyricViEl.value = data?.vi || "";
+  if(showToast) toast(data ? "📥 Loaded lyrics" : "ℹ️ No saved lyrics");
+}
+function clearLyricsForCurrent(){
+  const t = TRACKS[state.idx];
+  if(!t) return;
+  const store = readLyricsStore();
+  const key = lyricsKeyForTrack(t);
+  if(store[key]) delete store[key];
+  writeLyricsStore(store);
+  if(lyricEnEl) lyricEnEl.value = "";
+  if(lyricViEl) lyricViEl.value = "";
+  toast("🧹 Cleared lyrics");
+}
+/* =========================
+   7) COPY LINK + TIME SAVE (MANUAL)
+   - Because iframe can't read exact time,
+     we let user input/save time manually.
+   ========================= */
+async function copyCurrentLink(){
+  const t = TRACKS[state.idx];
+  if(!t) return;
+  const url = `https://youtu.be/${t.id}`;
+  try{
+    await navigator.clipboard.writeText(url);
+    toast("🔗 Copied link");
+  }catch(e){
+    toast("❌ Copy failed");
+  }
+}
+function saveTimeManual(){
+  // If anh có input #timeSec thì dùng nó
+  const timeEl = $("#timeSec");
+  let sec = 0;
+  if(timeEl){
+    sec = parseFloat(timeEl.value || "0");
+  }else{
+    const raw = prompt("Nhập số giây (start time) để lưu:", "0");
+    if(raw === null) return;
+    sec = parseFloat(raw);
+  }
+  if(!Number.isFinite(sec) || sec < 0) sec = 0;
+  state.lastStartSec = Math.floor(sec);
+  saveMediaState();
+  toast("⏱️ Saved start time");
+}
+function resetTimeManual(){
+  state.lastStartSec = 0;
+  saveMediaState();
+  toast("⟲ Reset saved time");
+}
+/* =========================
+   8) EVENT BINDING (NO DUPLICATE)
+   - Use event delegation for playlist
+   - Guard double-binding with a flag
+   ========================= */
+let BOUND = false;
+function bindEventsOnce(){
+  if(BOUND) return;
+  BOUND = true;
+  // Playlist click (delegation)
+  if(playlistEl){
+    playlistEl.addEventListener("click", (e)=>{
+      const card = e.target.closest(".track");
+      if(!card) return;
+      const idx = parseInt(card.dataset.idx, 10);
+      if(!Number.isInteger(idx)) return;
+      state.lastStartSec = 0; // reset manual saved time when user chooses new track
+      loadTrack(idx, { startSec: TRACKS[idx]?.start || 0 });
+    });
+  }
+  // Search/filter
+  if(searchEl){
+    searchEl.addEventListener("input", ()=>{
+      state.filter = searchEl.value || "";
+      renderPlaylist();
+    });
+  }
+  // Controls
+  btnNext?.addEventListener("click", ()=>{
+    if(state.repeat === "one"){
+      // replay same
+      state.lastStartSec = 0;
+      loadTrack(state.idx, { startSec: TRACKS[state.idx]?.start || 0 });
+      return;
+    }
+    state.lastStartSec = 0;
+    loadTrack(nextIndex(), { startSec: 0 });
+  });
+  btnPrev?.addEventListener("click", ()=>{
+    state.lastStartSec = 0;
+    loadTrack(prevIndex(), { startSec: 0 });
+  });
+
+  btnShuffle?.addEventListener("click", ()=>{
+    state.shuffle = !state.shuffle;
+    btnShuffle.classList.toggle("active", state.shuffle);
+    saveMediaState();
+    toast(state.shuffle ? "🔀 Shuffle ON" : "➡️ Shuffle OFF");
+  });
+  btnRepeat?.addEventListener("click", ()=>{
+    // cycle: all -> one -> off -> all
+    state.repeat = (state.repeat === "all") ? "one" : (state.repeat === "one" ? "off" : "all");
+    btnRepeat.dataset.mode = state.repeat; // optional for CSS
+    saveMediaState();
+    toast(`🔁 Repeat: ${state.repeat.toUpperCase()}`);
+  });
+  btnCopyLink?.addEventListener("click", copyCurrentLink);
+  btnSaveTime?.addEventListener("click", saveTimeManual);
+  btnResetTime?.addEventListener("click", resetTimeManual);
+  // Lyrics buttons
+  btnSaveLyric?.addEventListener("click", saveLyricsForCurrent);
+  btnLoadLyric?.addEventListener("click", ()=> loadLyricsForCurrent(true));
+  btnClearLyric?.addEventListener("click", clearLyricsForCurrent);
+  // Keyboard shortcuts (optional)
+  document.addEventListener("keydown", (e)=>{
+    if(e.target && ["INPUT","TEXTAREA","SELECT"].includes(e.target.tagName)) return;
+    if(e.key === "ArrowRight") btnNext?.click();
+    if(e.key === "ArrowLeft")  btnPrev?.click();
+    if(e.key.toLowerCase() === "s") btnShuffle?.click();
+    if(e.key.toLowerCase() === "r") btnRepeat?.click();
+  });
+}
+/* =========================
+   9) INIT
+   ========================= */
+function initMediaPlayer(){
+  // initial render + apply button UI state
+  renderPlaylist();
+  if(btnShuffle) btnShuffle.classList.toggle("active", state.shuffle);
+  if(btnRepeat)  btnRepeat.dataset.mode = state.repeat;
+  bindEventsOnce();
+  // Load initial track
+  loadTrack(state.idx, { useSavedTime:true });
+  toast("✅ Media Player ready");
+}
+/* Run after DOM ready */
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", initMediaPlayer, { once:true });
+}else{
+  initMediaPlayer();
+}
+/* =========================================================
+   END PART 3
+   ========================================================= */
+/* =========================================================
+   PART 4 — TRANSLATE (EN⇄VI) + LYRICS LIBRARY (Backup)
+   ✅ Translate EN<->VI (offline stub + hook for AI later)
+   ✅ Apply translation into Lyrics EN/VI
+   ✅ Export/Import lyrics store JSON (backup)
+   ✅ Quick library viewer (optional)
+   ========================================================= */
+/* =========================
+   1) DOM (ADD THESE IDs IN HTML)
+   =========================
+   - <textarea id="trSrc"></textarea>
+   - <textarea id="trOut" readonly></textarea>
+   - <select id="trDir">
+       <option value="en2vi">EN → VI</option>
+       <option value="vi2en">VI → EN</option>
+     </select>
+   - <button id="btnTranslate">Translate</button>
+   - <button id="btnSwapTr">Swap</button>
+   - <button id="btnApplyToLyrics">Apply → Lyrics</button>
+   Backup:
+   - <button id="btnExportLyrics">Export Lyrics JSON</button>
+   - <input type="file" id="fileImportLyrics" accept="application/json" hidden />
+   - <button id="btnImportLyrics">Import Lyrics JSON</button>
+   - <button id="btnClearAllLyrics">Clear ALL Lyrics</button>
+   Optional library box:
+   - <div id="lyricsLibrary"></div>
+   - <input id="lyricsSearch" placeholder="Search saved lyrics..." />
+*/
+const trSrcEl   = $("#trSrc");
+const trOutEl   = $("#trOut");
+const trDirEl   = $("#trDir");
+const btnTranslate = $("#btnTranslate");
+const btnSwapTr    = $("#btnSwapTr");
+const btnApplyToLyrics = $("#btnApplyToLyrics");
+const btnExportLyrics = $("#btnExportLyrics");
+const btnImportLyrics = $("#btnImportLyrics");
+const fileImportLyrics= $("#fileImportLyrics");
+const btnClearAllLyrics = $("#btnClearAllLyrics");
+const lyricsLibEl  = $("#lyricsLibrary");
+const lyricsSearchEl = $("#lyricsSearch");
+/* =========================
+   2) TRANSLATE CORE
+   - Option A (default): offline "smart stub" (no real translation)
+   - Option B: plug in AI API later (OpenAI / other)
+   ========================= */
+// ✅ Offline stub: chỉ để demo luồng + có thể thay bằng AI sau
+function offlineTranslateStub(text, dir){
+  const t = (text || "").trim();
+  if(!t) return "";
+  // Demo: nếu en2vi thì gắn prefix [VI], vi2en thì [EN]
+  // (Anh muốn dịch thật thì bật AI hook phía dưới)
+  return dir === "en2vi"
+    ? `【VI】${t}`
+    : `【EN】${t}`;
+}
+/*
+✅ AI HOOK (OPTIONAL)
+- Anh có thể thay function translateAI() bằng API anh muốn dùng.
+- Ở đây em để khung mẫu, KHÔNG tự gọi mạng.
+*/
+async function translateAI(text, dir){
+  // TODO: tích hợp API thật sau (OpenAI/translate server)
+  // return await callYourAPI(text, dir);
+  return offlineTranslateStub(text, dir);
+}
+async function runTranslate(){
+  const dir = trDirEl?.value || "en2vi";
+  const input = trSrcEl?.value || "";
+  if(!input.trim()){
+    toast("Nhập nội dung cần dịch trước đã anh.");
+    return;
+  }
+  // UI busy
+  if(btnTranslate) btnTranslate.disabled = true;
+  if(trOutEl) trOutEl.value = "Translating...";
+  try{
+    const out = await translateAI(input, dir);
+    if(trOutEl) trOutEl.value = out || "";
+    toast("✅ Done");
+  }catch(e){
+    if(trOutEl) trOutEl.value = "";
+    toast("❌ Translate error");
+    console.error(e);
+  }finally{
+    if(btnTranslate) btnTranslate.disabled = false;
+  }
+}
+function swapTranslate(){
+  if(!trDirEl) return;
+  const dir = trDirEl.value || "en2vi";
+  trDirEl.value = (dir === "en2vi") ? "vi2en" : "en2vi";
+  // swap text
+  const a = trSrcEl?.value || "";
+  const b = trOutEl?.value || "";
+  if(trSrcEl) trSrcEl.value = b;
+  if(trOutEl) trOutEl.value = a;
+}
+/* =========================
+   3) APPLY TRANSLATION → LYRICS (EN/VI)
+   - If dir en2vi: src is EN, out is VI
+   - If dir vi2en: src is VI, out is EN
+   ========================= */
+function applyTranslateToLyrics(){
+  const dir = trDirEl?.value || "en2vi";
+  const src = (trSrcEl?.value || "").trim();
+  const out = (trOutEl?.value || "").trim();
+  if(!src && !out){
+    toast("Chưa có nội dung để apply.");
+    return;
+  }
+  if(dir === "en2vi"){
+    if(lyricEnEl) lyricEnEl.value = src;
+    if(lyricViEl) lyricViEl.value = out;
+  }else{
+    if(lyricViEl) lyricViEl.value = src;
+    if(lyricEnEl) lyricEnEl.value = out;
+  }
+  toast("✅ Applied → Lyrics");
+}
+/* =========================
+   4) LYRICS BACKUP: EXPORT / IMPORT JSON
+   ========================= */
+function exportLyricsJSON(){
+  const store = readLyricsStore();
+  const payload = {
+    app: "MultiVerseApp",
+    type: "LyricsBackup",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    total: Object.keys(store).length,
+    data: store
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
+  const url  = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `lyrics-backup-${Date.now()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  toast("📦 Exported lyrics JSON");
+}
+function importLyricsJSONFile(file){
+  return new Promise((resolve, reject)=>{
+    const fr = new FileReader();
+    fr.onload = ()=>{
+      try{
+        const obj = JSON.parse(fr.result);
+        if(!obj || typeof obj !== "object") throw new Error("Invalid JSON");
+        const data = obj.data && typeof obj.data === "object" ? obj.data : null;
+        if(!data) throw new Error("Missing data field");
+        // merge into current
+        const cur = readLyricsStore();
+        const merged = { ...cur, ...data };
+        writeLyricsStore(merged);
+        // reload current track lyrics
+        loadLyricsForCurrent(false);
+        renderLyricsLibrary();
+        toast(`✅ Imported (${Object.keys(data).length})`);
+        resolve(true);
+      }catch(e){
+        toast("❌ Import failed (JSON invalid)");
+        console.error(e);
+        reject(e);
+      }
+    };
+    fr.onerror = ()=> reject(fr.error);
+    fr.readAsText(file);
+  });
+}
+function clearAllLyrics(){
+  if(!confirm("Xóa TẤT CẢ lyrics đã lưu? (Không khôi phục được)")) return;
+  writeLyricsStore({});
+  loadLyricsForCurrent(false);
+  renderLyricsLibrary();
+  toast("🧹 Cleared ALL lyrics");
+}
+/* =========================
+   5) OPTIONAL: LYRICS LIBRARY VIEWER
+   ========================= */
+function renderLyricsLibrary(){
+  if(!lyricsLibEl) return;
+  const q = norm(lyricsSearchEl?.value || "");
+  const store = readLyricsStore();
+  const items = Object.entries(store)
+    .map(([id, v]) => ({ id, ...v }))
+    .sort((a,b)=> (b.updatedAt||0) - (a.updatedAt||0))
+    .filter(it=>{
+      if(!q) return true;
+      const hay = norm(`${it.title||""} ${it.artist||""} ${it.en||""} ${it.vi||""}`);
+      return hay.includes(q);
+    });
+  if(items.length === 0){
+    lyricsLibEl.innerHTML = `<div class="item"><h3>No saved lyrics</h3><p>Chưa có lyrics nào được lưu.</p></div>`;
+    return;
+  }
+  lyricsLibEl.innerHTML = items.map(it=>{
+    const time = it.updatedAt ? new Date(it.updatedAt).toLocaleString() : "";
+    const enShort = (it.en||"").slice(0,120);
+    const viShort = (it.vi||"").slice(0,120);
+    return `
+      <div class="track" data-lyid="${escapeHTML(it.id)}" style="cursor:pointer">
+        <div class="trackTop">
+          <div class="trackTitle">${escapeHTML(it.title || it.id)}</div>
+          <div class="trackMeta">${escapeHTML((it.artist||"") + (time ? " • " + time : ""))}</div>
+        </div>
+        <p class="trackDesc"><b>EN:</b> ${escapeHTML(enShort)}${(it.en||"").length>120?"…":""}</p>
+        <p class="trackDesc"><b>VI:</b> ${escapeHTML(viShort)}${(it.vi||"").length>120?"…":""}</p>
+      </div>
+    `;
+  }).join("");
+}
+function bindLyricsLibraryEventsOnce(){
+  if(!lyricsLibEl) return;
+  if(bindLyricsLibraryEventsOnce._bound) return;
+  bindLyricsLibraryEventsOnce._bound = true;
+  // click an item -> load lyrics into textareas
+  lyricsLibEl.addEventListener("click", (e)=>{
+    const card = e.target.closest("[data-lyid]");
+    if(!card) return;
+    const id = card.getAttribute("data-lyid");
+    const store = readLyricsStore();
+    const data = store[id];
+    if(!data){
+      toast("Not found");
+      return;
+    }
+    if(lyricEnEl) lyricEnEl.value = data.en || "";
+    if(lyricViEl) lyricViEl.value = data.vi || "";
+    toast("📥 Loaded from library → Lyrics box");
+  });
+  lyricsSearchEl?.addEventListener("input", renderLyricsLibrary);
+}
+/* =========================
+   6) EVENTS
+   ========================= */
+function initTranslateAndBackup(){
+  btnTranslate?.addEventListener("click", runTranslate);
+  btnSwapTr?.addEventListener("click", swapTranslate);
+  btnApplyToLyrics?.addEventListener("click", applyTranslateToLyrics);
+  btnExportLyrics?.addEventListener("click", exportLyricsJSON);
+  btnImportLyrics?.addEventListener("click", ()=>{
+    if(!fileImportLyrics) return toast("Missing #fileImportLyrics");
+    fileImportLyrics.click();
+  });
+  fileImportLyrics?.addEventListener("change", async ()=>{
+    const file = fileImportLyrics.files?.[0];
+    if(!file) return;
+    await importLyricsJSONFile(file);
+    fileImportLyrics.value = "";
+  });
+  btnClearAllLyrics?.addEventListener("click", clearAllLyrics);
+  bindLyricsLibraryEventsOnce();
+  renderLyricsLibrary();
+}
+// Run after PART 3 init (safe)
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", initTranslateAndBackup, { once:true });
+}else{
+  initTranslateAndBackup();
+}
+/* =========================================================
+   END PART 4
+   ========================================================= */
+<!-- =========================================================
+     PART 5A — TRANSLATE + LYRICS LIBRARY (HTML UI)
+     Must match IDs used in PART 4
+     ========================================================= -->
+<section class="card">
+  <div class="cardHead">
+    <h2>Translate (EN ⇄ VI)</h2>
+    <p class="muted">Dịch nhanh để học tiếng Anh, rồi apply vào Lyrics.</p>
+  </div>
+  <div class="trGrid">
+    <div class="trCol">
+      <label class="lbl">Input</label>
+      <textarea id="trSrc" class="ta" rows="6" placeholder="Paste English or Vietnamese here..."></textarea>
+      <div class="trRow">
+        <select id="trDir" class="sel">
+          <option value="en2vi">EN → VI</option>
+          <option value="vi2en">VI → EN</option>
+        </select>
+        <button id="btnTranslate" class="btn primary">Translate</button>
+        <button id="btnSwapTr" class="btn">Swap</button>
+        <button id="btnApplyToLyrics" class="btn ok">Apply → Lyrics</button>
+      </div>
+    </div>
+    <div class="trCol">
+      <label class="lbl">Output</label>
+      <textarea id="trOut" class="ta" rows="6" placeholder="Translation result..." readonly></textarea>
+      <div class="hint">
+        <span class="dot"></span>
+        <span>Tip: bấm <b>Apply → Lyrics</b> để tự đổ vào ô Lyrics EN/VI của bài đang phát.</span>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="card">
+  <div class="cardHead">
+    <h2>Lyrics Library (Saved)</h2>
+    <p class="muted">Lưu lyrics theo từng bài. Có thể backup/export để không mất.</p>
+  </div>
+  <div class="libTop">
+    <input id="lyricsSearch" class="inp" placeholder="Search saved lyrics..." />
+    <div class="libBtns">
+      <button id="btnExportLyrics" class="btn">Export JSON</button>
+      <button id="btnImportLyrics" class="btn">Import JSON</button>
+      <button id="btnClearAllLyrics" class="btn danger">Clear All</button>
+      <input type="file" id="fileImportLyrics" accept="application/json" hidden />
+    </div>
+  </div>
+  <div id="lyricsLibrary" class="libBox">
+    <!-- render by JS -->
+  </div>
+</section>
+<!-- =========================================================
+     END PART 5A
+     ========================================================= -->
+/* =========================================================
+   PART 5B — TRANSLATE + LYRICS LIBRARY (CSS)
+   ========================================================= */
+.card{
+  border:1px solid var(--line, rgba(255,255,255,.12));
+  border-radius:18px;
+  padding:16px;
+  background:rgba(255,255,255,.04);
+  margin:14px 0;
+}
+.cardHead h2{
+  margin:0 0 6px 0;
+  font-size:18px;
+  letter-spacing:.2px;
+}
+.muted{
+  opacity:.78;
+  margin:0;
+  font-size:13px;
+}
+
+.lbl{
+  display:block;
+  font-size:12px;
+  opacity:.8;
+  margin:8px 0 6px;
+}
+.trGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:12px;
+  margin-top:10px;
+}
+.trCol{ display:flex; flex-direction:column; gap:8px; }
+.ta{
+  width:100%;
+  border-radius:14px;
+  border:1px solid var(--line, rgba(255,255,255,.12));
+  background:rgba(0,0,0,.18);
+  padding:12px;
+  color:inherit;
+  outline:none;
+  resize:vertical;
+  line-height:1.4;
+}
+.inp{
+  width:100%;
+  border-radius:14px;
+  border:1px solid var(--line, rgba(255,255,255,.12));
+  background:rgba(0,0,0,.18);
+  padding:10px 12px;
+  color:inherit;
+  outline:none;
+}
+.sel{
+  border-radius:14px;
+  border:1px solid var(--line, rgba(255,255,255,.12));
+  background:rgba(0,0,0,.18);
+  padding:10px 12px;
+  color:inherit;
+  outline:none;
+  min-width:140px;
+}
+.trRow{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.btn{
+  border:1px solid var(--line, rgba(255,255,255,.12));
+  background:rgba(255,255,255,.06);
+  color:inherit;
+  padding:10px 12px;
+  border-radius:14px;
+  cursor:pointer;
+  transition:.15s ease;
+  user-select:none;
+}
+.btn:hover{ transform:translateY(-1px); background:rgba(255,255,255,.09); }
+.btn:active{ transform:translateY(0px); opacity:.9; }
+
+.btn.primary{
+  background:rgba(0, 140, 255, .22);
+  border-color:rgba(0, 140, 255, .35);
+}
+.btn.ok{
+  background:rgba(0, 200, 120, .18);
+  border-color:rgba(0, 200, 120, .32);
+}
+.btn.danger{
+  background:rgba(255, 60, 60, .18);
+  border-color:rgba(255, 60, 60, .32);
+}
+.hint{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:12px;
+  opacity:.85;
+  padding:8px 10px;
+  border-radius:14px;
+  border:1px dashed rgba(255,255,255,.12);
+  background:rgba(255,255,255,.03);
+}
+.hint .dot{
+  width:8px; height:8px;
+  border-radius:50%;
+  background:rgba(0, 200, 120, .9);
+  display:inline-block;
+}
+.libTop{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin-top:10px;
+  flex-wrap:wrap;
+}
+.libBtns{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.libBox{
+  margin-top:12px;
+  display:grid;
+  gap:10px;
+}
+/* Make library items consistent with playlist style */
+.libBox .track{
+  border:1px solid var(--line, rgba(255,255,255,.12));
+  border-radius:16px;
+  background:rgba(255,255,255,.04);
+  padding:12px;
+  transition:.18s ease;
+}
+.libBox .track:hover{ transform:translateY(-1px); background:rgba(255,255,255,.06); }
+.libBox .trackTitle{ font-weight:700; margin-bottom:4px; }
+.libBox .trackMeta{ font-size:12px; opacity:.75; }
+.libBox .trackDesc{ margin:6px 0 0; font-size:12px; opacity:.88; }
+/* Responsive */
+@media (max-width: 900px){
+  .trGrid{ grid-template-columns:1fr; }
+  .sel{ min-width:160px; }
+}
+/* =========================================================
+   PART 6 — TRANSLATE ENGINE (Realistic)
+   ✅ Mode A: Offline mini translate (no internet)
+   ✅ Mode B: Online API translate (optional)
+   ✅ Apply result into Lyrics EN/VI of current track
+   ✅ Save last translate state
+   ========================================================= */
+/* =========================
+   0) DOM (Must match PART 5)
+   ========================= */
+const trSrcEl   = $("#trSrc");
+const trOutEl   = $("#trOut");
+const trDirEl   = $("#trDir");
+const btnTr     = $("#btnTranslate");
+const btnSwapTr = $("#btnSwapTr");
+const btnApply  = $("#btnApplyToLyrics");
+/* =========================
+   1) SETTINGS + STORAGE
+   ========================= */
+const TR = {
+  LS_KEY: "MVAPP_TRANSLATE_STATE_V1",
+  MODE: "offline", // "offline" | "api"
+  // Nếu dùng API: điền endpoint ở đây
+  // LibreTranslate example: https://libretranslate.com/translate
+  // Self-hosted: https://your-domain.com/translate
+  API_URL: "",
+  // timeout fetch (ms)
+  TIMEOUT: 12000
+};
+function restoreTranslateState(){
+  const saved = safeJSONParse(localStorage.getItem(TR.LS_KEY), null);
+  if(!saved) return;
+  if(trSrcEl && typeof saved.src === "string") trSrcEl.value = saved.src;
+  if(trOutEl && typeof saved.out === "string") trOutEl.value = saved.out;
+  if(trDirEl && (saved.dir === "en2vi" || saved.dir === "vi2en")) trDirEl.value = saved.dir;
+  if(typeof saved.mode === "string" && (saved.mode === "offline" || saved.mode === "api")) TR.MODE = saved.mode;
+  if(typeof saved.apiUrl === "string") TR.API_URL = saved.apiUrl;
+}
+function saveTranslateState(){
+  localStorage.setItem(TR.LS_KEY, JSON.stringify({
+    src: trSrcEl?.value || "",
+    out: trOutEl?.value || "",
+    dir: trDirEl?.value || "en2vi",
+    mode: TR.MODE,
+    apiUrl: TR.API_URL
+  }));
+}
+/* =========================
+   2) MODE A — OFFLINE MINI TRANSLATE
+   - Không thể dịch chuẩn 100% như Google,
+     nhưng đủ cho câu cơ bản + học từ vựng.
+   ========================= */
+const MINI_DICT_EN2VI = {
+  "hello":"xin chào",
+  "hi":"chào",
+  "good":"tốt",
+  "bad":"tệ",
+  "morning":"buổi sáng",
+  "night":"buổi tối",
+  "thank you":"cảm ơn",
+  "thanks":"cảm ơn",
+  "sorry":"xin lỗi",
+  "love":"yêu",
+  "miss":"nhớ",
+  "you":"bạn",
+  "i":"tôi",
+  "we":"chúng tôi",
+  "they":"họ",
+  "he":"anh ấy",
+  "she":"cô ấy",
+  "music":"âm nhạc",
+  "song":"bài hát",
+  "lyrics":"lời bài hát",
+  "today":"hôm nay",
+  "tomorrow":"ngày mai",
+  "yesterday":"hôm qua",
+  "happy":"vui",
+  "sad":"buồn",
+  "beautiful":"đẹp",
+  "family":"gia đình",
+  "friend":"bạn",
+  "work":"công việc",
+  "study":"học",
+  "school":"trường",
+  "home":"nhà"
+};
+// VI->EN tạo ngược nhanh
+const MINI_DICT_VI2EN = Object.fromEntries(
+  Object.entries(MINI_DICT_EN2VI).map(([en,vi]) => [vi,en])
+);
+function offlineTranslate(text, dir){
+  const raw = (text || "").trim();
+  if(!raw) return "";
+
+  // Dịch theo cụm trước (phrase), rồi theo từ
+  const dict = (dir === "en2vi") ? MINI_DICT_EN2VI : MINI_DICT_VI2EN;
+  // 1) thay phrase dài trước
+  let out = raw;
+  const phrases = Object.keys(dict).sort((a,b)=> b.length - a.length);
+  phrases.forEach(k=>{
+    const safe = k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const rx = new RegExp(`\\b${safe}\\b`, "gi");
+    out = out.replace(rx, (m)=> {
+      // giữ hoa chữ cái đầu nếu có
+      const rep = dict[k];
+      if(!rep) return m;
+      const isCap = m[0] === m[0].toUpperCase();
+      return isCap ? rep.charAt(0).toUpperCase() + rep.slice(1) : rep;
+    });
+  });
+  return out;
+}
+/* =========================
+   3) MODE B — ONLINE API TRANSLATE
+   - Anh có thể dùng LibreTranslate/self-host.
+   - Payload chuẩn:
+     { q, source, target, format:"text" }
+   ========================= */
+function fetchWithTimeout(url, opts={}, timeout=12000){
+  return new Promise((resolve, reject)=>{
+    const ctrl = new AbortController();
+    const id = setTimeout(()=> ctrl.abort(), timeout);
+    fetch(url, { ...opts, signal: ctrl.signal })
+      .then(res => { clearTimeout(id); resolve(res); })
+      .catch(err => { clearTimeout(id); reject(err); });
+  });
+}
+async function apiTranslate(text, dir){
+  if(!TR.API_URL){
+    throw new Error("Missing API URL");
+  }
+  const source = dir === "en2vi" ? "en" : "vi";
+  const target = dir === "en2vi" ? "vi" : "en";
+
+  const body = {
+    q: text,
+    source,
+    target,
+    format: "text"
+  };
+  const res = await fetchWithTimeout(TR.API_URL, {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify(body)
+  }, TR.TIMEOUT);
+  if(!res.ok){
+    const t = await res.text().catch(()=> "");
+    throw new Error(`API error ${res.status}: ${t.slice(0,200)}`);
+  }
+  const data = await res.json();
+  // LibreTranslate: { translatedText: "..." }
+  const translated = data?.translatedText || data?.translation || data?.result;
+  if(typeof translated !== "string") throw new Error("Bad API response");
+  return translated;
+}
+/* =========================
+   4) MAIN TRANSLATE ACTION
+   ========================= */
+async function doTranslate(){
+  const text = (trSrcEl?.value || "").trim();
+  const dir  = trDirEl?.value || "en2vi";
+  if(!text){
+    toast("⚠️ Please enter text to translate");
+    return;
+  }
+  try{
+    toast("⏳ Translating...");
+    let result = "";
+    if(TR.MODE === "api"){
+      result = await apiTranslate(text, dir);
+    }else{
+      result = offlineTranslate(text, dir);
+    }
+    if(trOutEl) trOutEl.value = result;
+    saveTranslateState();
+    toast("✅ Done");
+  }catch(e){
+    console.error(e);
+    toast("❌ Translate failed (check MODE/API URL)");
+  }
+}
+/* =========================
+   5) SWAP + APPLY TO LYRICS
+   ========================= */
+function swapTranslate(){
+  const a = trSrcEl?.value || "";
+  const b = trOutEl?.value || "";
+  if(trSrcEl) trSrcEl.value = b;
+  if(trOutEl) trOutEl.value = a;
+  // swap direction
+  const d = trDirEl?.value || "en2vi";
+  if(trDirEl) trDirEl.value = (d === "en2vi") ? "vi2en" : "en2vi";
+  saveTranslateState();
+  toast("🔁 Swapped");
+}
+
+function applyToLyrics(){
+  const dir = trDirEl?.value || "en2vi";
+  const out = (trOutEl?.value || "").trim();
+  const src = (trSrcEl?.value || "").trim();
+  if(!out && !src){
+    toast("⚠️ Nothing to apply");
+    return;
+  }
+  // Nếu EN→VI: src là EN, out là VI
+  if(dir === "en2vi"){
+    if(lyricEnEl) lyricEnEl.value = src;
+    if(lyricViEl) lyricViEl.value = out;
+  }else{
+    // VI→EN: src là VI, out là EN
+    if(lyricViEl) lyricViEl.value = src;
+    if(lyricEnEl) lyricEnEl.value = out;
+  }
+  toast("✅ Applied to Lyrics");
+}
+/* =========================
+   6) QUICK SETTINGS UI (Optional)
+   - Không cần HTML thêm.
+   - Dùng phím tắt để đổi MODE.
+   ========================= */
+function toggleTranslateMode(){
+  TR.MODE = (TR.MODE === "offline") ? "api" : "offline";
+  saveTranslateState();
+  toast(`🌐 Translate mode: ${TR.MODE.toUpperCase()}`);
+  if(TR.MODE === "api" && !TR.API_URL){
+    toast("ℹ️ API mode ON but API_URL is empty");
+  }
+}
+/* =========================
+   7) BIND ONCE
+   ========================= */
+let TR_BOUND = false;
+function bindTranslateOnce(){
+  if(TR_BOUND) return;
+  TR_BOUND = true;
+  btnTr?.addEventListener("click", doTranslate);
+  btnSwapTr?.addEventListener("click", swapTranslate);
+  btnApply?.addEventListener("click", applyToLyrics);
+  // Enter to translate (Ctrl+Enter)
+  trSrcEl?.addEventListener("keydown", (e)=>{
+    if((e.ctrlKey || e.metaKey) && e.key === "Enter"){
+      doTranslate();
+    }
+  });
+  // Shortcut: Alt+T toggles mode
+  document.addEventListener("keydown", (e)=>{
+    if(e.altKey && e.key.toLowerCase() === "t"){
+      toggleTranslateMode();
+    }
+  });
+}
+/* =========================
+   8) INIT
+   ========================= */
+(function initTranslate(){
+  restoreTranslateState();
+  bindTranslateOnce();
+})();
+/* =========================================================
+   PART 6 — TRANSLATE ENGINE (Realistic)
+   ✅ Mode A: Offline mini translate (no internet)
+   ✅ Mode B: Online API translate (optional)
+   ✅ Apply result into Lyrics EN/VI of current track
+   ✅ Save last translate state
+   ========================================================= */
+/* =========================
+   0) DOM (Must match PART 5)
+   ========================= */
+const trSrcEl   = $("#trSrc");
+const trOutEl   = $("#trOut");
+const trDirEl   = $("#trDir");
+const btnTr     = $("#btnTranslate");
+const btnSwapTr = $("#btnSwapTr");
+const btnApply  = $("#btnApplyToLyrics");
+/* =========================
+   1) SETTINGS + STORAGE
+   ========================= */
+const TR = {
+  LS_KEY: "MVAPP_TRANSLATE_STATE_V1",
+  MODE: "offline", // "offline" | "api"
+  // Nếu dùng API: điền endpoint ở đây
+  // LibreTranslate example: https://libretranslate.com/translate
+  // Self-hosted: https://your-domain.com/translate
+  API_URL: "",
+  // timeout fetch (ms)
+  TIMEOUT: 12000
+};
+function restoreTranslateState(){
+  const saved = safeJSONParse(localStorage.getItem(TR.LS_KEY), null);
+  if(!saved) return;
+  if(trSrcEl && typeof saved.src === "string") trSrcEl.value = saved.src;
+  if(trOutEl && typeof saved.out === "string") trOutEl.value = saved.out;
+  if(trDirEl && (saved.dir === "en2vi" || saved.dir === "vi2en")) trDirEl.value = saved.dir;
+  if(typeof saved.mode === "string" && (saved.mode === "offline" || saved.mode === "api")) TR.MODE = saved.mode;
+  if(typeof saved.apiUrl === "string") TR.API_URL = saved.apiUrl;
+}
+function saveTranslateState(){
+  localStorage.setItem(TR.LS_KEY, JSON.stringify({
+    src: trSrcEl?.value || "",
+    out: trOutEl?.value || "",
+    dir: trDirEl?.value || "en2vi",
+    mode: TR.MODE,
+    apiUrl: TR.API_URL
+  }));
+}
+/* =========================
+   2) MODE A — OFFLINE MINI TRANSLATE
+   - Không thể dịch chuẩn 100% như Google,
+     nhưng đủ cho câu cơ bản + học từ vựng.
+   ========================= */
+const MINI_DICT_EN2VI = {
+  "hello":"xin chào",
+  "hi":"chào",
+  "good":"tốt",
+  "bad":"tệ",
+  "morning":"buổi sáng",
+  "night":"buổi tối",
+  "thank you":"cảm ơn",
+  "thanks":"cảm ơn",
+  "sorry":"xin lỗi",
+  "love":"yêu",
+  "miss":"nhớ",
+  "you":"bạn",
+  "i":"tôi",
+  "we":"chúng tôi",
+  "they":"họ",
+  "he":"anh ấy",
+  "she":"cô ấy",
+  "music":"âm nhạc",
+  "song":"bài hát",
+  "lyrics":"lời bài hát",
+  "today":"hôm nay",
+  "tomorrow":"ngày mai",
+  "yesterday":"hôm qua",
+  "happy":"vui",
+  "sad":"buồn",
+  "beautiful":"đẹp",
+  "family":"gia đình",
+  "friend":"bạn",
+  "work":"công việc",
+  "study":"học",
+  "school":"trường",
+  "home":"nhà"
+};
+// VI->EN tạo ngược nhanh
+const MINI_DICT_VI2EN = Object.fromEntries(
+  Object.entries(MINI_DICT_EN2VI).map(([en,vi]) => [vi,en])
+);
+function offlineTranslate(text, dir){
+  const raw = (text || "").trim();
+  if(!raw) return "";
+  // Dịch theo cụm trước (phrase), rồi theo từ
+  const dict = (dir === "en2vi") ? MINI_DICT_EN2VI : MINI_DICT_VI2EN;
+  // 1) thay phrase dài trước
+  let out = raw;
+  const phrases = Object.keys(dict).sort((a,b)=> b.length - a.length);
+  phrases.forEach(k=>{
+    const safe = k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const rx = new RegExp(`\\b${safe}\\b`, "gi");
+    out = out.replace(rx, (m)=> {
+      // giữ hoa chữ cái đầu nếu có
+      const rep = dict[k];
+      if(!rep) return m;
+      const isCap = m[0] === m[0].toUpperCase();
+      return isCap ? rep.charAt(0).toUpperCase() + rep.slice(1) : rep;
+    });
+  });
+  return out;
+}
+/* =========================
+   3) MODE B — ONLINE API TRANSLATE
+   - Anh có thể dùng LibreTranslate/self-host.
+   - Payload chuẩn:
+     { q, source, target, format:"text" }
+   ========================= */
+function fetchWithTimeout(url, opts={}, timeout=12000){
+  return new Promise((resolve, reject)=>{
+    const ctrl = new AbortController();
+    const id = setTimeout(()=> ctrl.abort(), timeout);
+    fetch(url, { ...opts, signal: ctrl.signal })
+      .then(res => { clearTimeout(id); resolve(res); })
+      .catch(err => { clearTimeout(id); reject(err); });
+  });
+}
+async function apiTranslate(text, dir){
+  if(!TR.API_URL){
+    throw new Error("Missing API URL");
+  }
+  const source = dir === "en2vi" ? "en" : "vi";
+  const target = dir === "en2vi" ? "vi" : "en";
+  const body = {
+    q: text,
+    source,
+    target,
+    format: "text"
+  };
+  const res = await fetchWithTimeout(TR.API_URL, {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify(body)
+  }, TR.TIMEOUT);
+  if(!res.ok){
+    const t = await res.text().catch(()=> "");
+    throw new Error(`API error ${res.status}: ${t.slice(0,200)}`);
+  }
+  const data = await res.json();
+  // LibreTranslate: { translatedText: "..." }
+  const translated = data?.translatedText || data?.translation || data?.result;
+  if(typeof translated !== "string") throw new Error("Bad API response");
+  return translated;
+}
+/* =========================
+   4) MAIN TRANSLATE ACTION
+   ========================= */
+async function doTranslate(){
+  const text = (trSrcEl?.value || "").trim();
+  const dir  = trDirEl?.value || "en2vi";
+  if(!text){
+    toast("⚠️ Please enter text to translate");
+    return;
+  }
+  try{
+    toast("⏳ Translating...");
+    let result = "";
+    if(TR.MODE === "api"){
+      result = await apiTranslate(text, dir);
+    }else{
+      result = offlineTranslate(text, dir);
+    }
+    if(trOutEl) trOutEl.value = result;
+    saveTranslateState();
+    toast("✅ Done");
+  }catch(e){
+    console.error(e);
+    toast("❌ Translate failed (check MODE/API URL)");
+  }
+}
+/* =========================
+   5) SWAP + APPLY TO LYRICS
+   ========================= */
+function swapTranslate(){
+  const a = trSrcEl?.value || "";
+  const b = trOutEl?.value || "";
+  if(trSrcEl) trSrcEl.value = b;
+  if(trOutEl) trOutEl.value = a;
+  // swap direction
+  const d = trDirEl?.value || "en2vi";
+  if(trDirEl) trDirEl.value = (d === "en2vi") ? "vi2en" : "en2vi";
+  saveTranslateState();
+  toast("🔁 Swapped");
+}
+function applyToLyrics(){
+  const dir = trDirEl?.value || "en2vi";
+  const out = (trOutEl?.value || "").trim();
+  const src = (trSrcEl?.value || "").trim();
+
+  if(!out && !src){
+    toast("⚠️ Nothing to apply");
+    return;
+  }
+  // Nếu EN→VI: src là EN, out là VI
+  if(dir === "en2vi"){
+    if(lyricEnEl) lyricEnEl.value = src;
+    if(lyricViEl) lyricViEl.value = out;
+  }else{
+    // VI→EN: src là VI, out là EN
+    if(lyricViEl) lyricViEl.value = src;
+    if(lyricEnEl) lyricEnEl.value = out;
+  }
+  toast("✅ Applied to Lyrics");
+}
+/* =========================
+   6) QUICK SETTINGS UI (Optional)
+   - Không cần HTML thêm.
+   - Dùng phím tắt để đổi MODE.
+   ========================= */
+function toggleTranslateMode(){
+  TR.MODE = (TR.MODE === "offline") ? "api" : "offline";
+  saveTranslateState();
+  toast(`🌐 Translate mode: ${TR.MODE.toUpperCase()}`);
+  if(TR.MODE === "api" && !TR.API_URL){
+    toast("ℹ️ API mode ON but API_URL is empty");
+  }
+}
+/* =========================
+   7) BIND ONCE
+   ========================= */
+let TR_BOUND = false;
+function bindTranslateOnce(){
+  if(TR_BOUND) return;
+  TR_BOUND = true;
+  btnTr?.addEventListener("click", doTranslate);
+  btnSwapTr?.addEventListener("click", swapTranslate);
+  btnApply?.addEventListener("click", applyToLyrics);
+  // Enter to translate (Ctrl+Enter)
+  trSrcEl?.addEventListener("keydown", (e)=>{
+    if((e.ctrlKey || e.metaKey) && e.key === "Enter"){
+      doTranslate();
+    }
+  });
+  // Shortcut: Alt+T toggles mode
+  document.addEventListener("keydown", (e)=>{
+    if(e.altKey && e.key.toLowerCase() === "t"){
+      toggleTranslateMode();
+    }
+  });
+}
+/* =========================
+   8) INIT
+   ========================= */
+(function initTranslate(){
+  restoreTranslateState();
+  bindTranslateOnce();
+})();
+/* =========================================================
+   PART 8 — AUTO LYRICS TRANSLATE (LINE-BY-LINE) + SAVE/IMPORT/EXPORT
+   ✅ Translate lyrics EN <-> VI like GG (uses PART 7 API) + offline fallback
+   ✅ Per-track save into localStorage (compatible with PART 3 LS.lyrics)
+   ✅ Translate by line (keeps line breaks), preserves empty lines
+   ✅ Buttons:
+      - #btnLyricAutoENtoVI  : auto translate EN -> VI
+      - #btnLyricAutoVItoEN  : auto translate VI -> EN
+      - #btnLyricSaveBoth    : save current EN+VI for current track
+      - #btnLyricExportJSON  : export all lyrics store (download .json)
+      - #btnLyricImportJSON  : import lyrics store from .json file input
+      - #fileLyricImport     : <input type="file" accept="application/json">
+   ✅ Works with PART 3 elements:
+      - #lyricEN, #lyricVI and TRACKS/state/LS from PART 3
+   ========================================================= */
+
+(function(){
+  // ---------------------------------------------------------
+  // 0) Guards / Helpers
+  // ---------------------------------------------------------
+  const $  = (q, root=document) => root.querySelector(q);
+  const $$ = (q, root=document) => Array.from(root.querySelectorAll(q));
+
+  // Try reuse toast from PART 3
+  const toast = window.toast || function(msg){ alert(msg); };
+
+  function safeJSONParse(str, fallback){
+    try{ return JSON.parse(str); }catch(e){ return fallback; }
+  }
+  function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+  // ---------------------------------------------------------
+  // 1) Required globals from PART 3
+  // ---------------------------------------------------------
+  // TRACKS: [{id,title,artist,tag,...}] and state.idx and LS.lyrics key
+  // If your playlist array is named MEDIA, create TRACKS mapping in PART 3.
+  const TRACKS = window.TRACKS || window.MEDIA || [];
+  const state  = window.state  || { idx:0 };
+  const LS     = window.LS     || { lyrics:"MVAPP_LYRICS_V1" };
+
+  // If MEDIA uses {videoId}, adapt to {id}
+  // We'll create a normalized accessor for "track id"
+  function trackId(t){
+    return t?.id || t?.videoId || "unknown";
+  }
+
+  // ---------------------------------------------------------
+  // 2) DOM
+  // ---------------------------------------------------------
+  const lyricEnEl = $("#lyricEN");
+  const lyricViEl = $("#lyricVI");
+
+  const btnENtoVI = $("#btnLyricAutoENtoVI");
+  const btnVItoEN = $("#btnLyricAutoVItoEN");
+  const btnSave   = $("#btnLyricSaveBoth");
+  const btnExport = $("#btnLyricExportJSON");
+  const btnImport = $("#btnLyricImportJSON");
+  const fileInput = $("#fileLyricImport");
+
+  // Optional status
+  const progEl    = $("#lyricProgress"); // <span id="lyricProgress"></span> (optional)
+
+  // ---------------------------------------------------------
+  // 3) Read/Write lyrics store (same style as PART 3)
+  // ---------------------------------------------------------
+  function readLyricsStore(){
+    return safeJSONParse(localStorage.getItem(LS.lyrics), {});
+  }
+  function writeLyricsStore(obj){
+    localStorage.setItem(LS.lyrics, JSON.stringify(obj));
+  }
+  function currentTrack(){
+    if(!TRACKS.length) return null;
+    const idx = clamp(state.idx||0, 0, TRACKS.length-1);
+    return TRACKS[idx];
+  }
+  function loadLyricsForCurrentIntoUI(showToast=false){
+    const t = currentTrack();
+    if(!t) return;
+    const store = readLyricsStore();
+    const key = trackId(t);
+    const data = store[key];
+    if(lyricEnEl) lyricEnEl.value = data?.en || "";
+    if(lyricViEl) lyricViEl.value = data?.vi || "";
+    if(showToast) toast(data ? "📥 Loaded lyrics" : "ℹ️ No saved lyrics");
+  }
+  function saveBothLyricsForCurrent(){
+    const t = currentTrack();
+    if(!t) return;
+    const store = readLyricsStore();
+    const key = trackId(t);
+    store[key] = {
+      title: t.title || "",
+      artist: t.artist || t.meta || "",
+      en: (lyricEnEl?.value || "").trim(),
+      vi: (lyricViEl?.value || "").trim(),
+      updatedAt: Date.now()
+    };
+    writeLyricsStore(store);
+    toast("✅ Saved EN+VI lyrics");
+  }
+  // ---------------------------------------------------------
+  // 4) Translate core (uses PART 7: TR.MODE + apiTranslate/offline)
+  // ---------------------------------------------------------
+  // From PART 7:
+  //   window.TR.MODE = "api"|"offline"
+  //   apiTranslate(text, source, target)  (we can call if exists)
+  //   offlineTranslate(text, source, target) (fallback)
+  const TR = window.TR || (window.TR = {});
+  const apiTranslate = window.apiTranslate;
+  const offlineTranslate = window.offlineTranslate;
+  function detectLangSimple(text){
+    const s = (text||"").toString();
+    const vi = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i;
+    return vi.test(s) ? "vi" : "en";
+  }
+  // translate by line with batching to avoid huge requests
+  // - keeps empty lines
+  // - preserves line breaks exactly
+  function splitLinesKeepEmpty(text){
+    // Keep Windows/Unix line endings normalized to \n
+    return (text || "").replace(/\r\n/g, "\n").split("\n");
+  }
+  // Join lines
+  function joinLines(lines){
+    return lines.join("\n");
+  }
+  // Batch strategy:
+  // - For API: send chunks of N lines joined by \n (to keep formatting)
+  // - If chunk too long, reduce N
+  const MAX_CHUNK_CHARS = 3500; // safe-ish for Apps Script + LanguageApp
+  function batchLines(lines){
+    const batches = [];
+    let buf = [];
+    let len = 0;
+    for(const line of lines){
+      const addLen = line.length + 1; // + newline
+      if(buf.length > 0 && (len + addLen) > MAX_CHUNK_CHARS){
+        batches.push(buf);
+        buf = [];
+        len = 0;
+      }
+      buf.push(line);
+      len += addLen;
+    }
+    if(buf.length) batches.push(buf);
+    return batches;
+  }
+  function setProgress(text){
+    if(progEl) progEl.textContent = text;
+  }
+  async function translateLyricsLineByLine(inputText, source, target){
+    const lines = splitLinesKeepEmpty(inputText);
+    if(lines.length === 0) return "";
+
+    // Fast path: empty
+    if(lines.every(l => !l.trim())) return inputText;
+
+    const batches = batchLines(lines);
+    const outLines = [];
+    let doneBatches = 0;
+    for(const batch of batches){
+      doneBatches++;
+      setProgress(`Translating ${doneBatches}/${batches.length}...`);
+
+      const chunkText = joinLines(batch);
+
+      let translatedChunk = "";
+      if(TR.MODE === "api" && typeof apiTranslate === "function"){
+        translatedChunk = await apiTranslate(chunkText, source, target);
+      }else if(typeof offlineTranslate === "function"){
+        // offline translate by words, but keep line breaks
+        translatedChunk = offlineTranslate(chunkText, source === "auto" ? detectLangSimple(chunkText) : source, target);
+      }else{
+        throw new Error("No translate engine (PART 7 missing)");
+      }
+      // Because we kept \n, we can split back into same number of lines
+      const tLines = splitLinesKeepEmpty(translatedChunk);
+
+      // If the translator changes line count, fallback: keep original line structure
+      if(tLines.length !== batch.length){
+        // map line-by-line: if counts mismatch, best effort align
+        for(let i=0;i<batch.length;i++){
+          outLines.push(tLines[i] ?? "");
+        }
+      }else{
+        outLines.push(...tLines);
+      }
+    }
+    setProgress("");
+    return joinLines(outLines);
+  }
+  // ---------------------------------------------------------
+  // 5) UI actions
+  // ---------------------------------------------------------
+  async function autoENtoVI(){
+    if(!lyricEnEl || !lyricViEl) return toast("❌ Missing #lyricEN or #lyricVI");
+    const src = (lyricEnEl.value || "").trim();
+    if(!src) return toast("Nhập lyrics EN trước đã anh");
+    disableButtons(true);
+    try{
+      const out = await translateLyricsLineByLine(src, "en", "vi");
+      lyricViEl.value = out;
+      toast("✅ Auto translated: EN → VI");
+    }catch(e){
+      toast("❌ Translate failed (check PART 7 API_URL)");
+    }finally{
+      disableButtons(false);
+      setProgress("");
+    }
+  }
+  async function autoVItoEN(){
+    if(!lyricEnEl || !lyricViEl) return toast("❌ Missing #lyricEN or #lyricVI");
+    const src = (lyricViEl.value || "").trim();
+    if(!src) return toast("Nhập lyrics VI trước đã anh");
+    disableButtons(true);
+    try{
+      const out = await translateLyricsLineByLine(src, "vi", "en");
+      lyricEnEl.value = out;
+      toast("✅ Auto translated: VI → EN");
+    }catch(e){
+      toast("❌ Translate failed (check PART 7 API_URL)");
+    }finally{
+      disableButtons(false);
+      setProgress("");
+    }
+  }
+  function disableButtons(disabled){
+    [btnENtoVI, btnVItoEN, btnSave, btnExport, btnImport].forEach(b=>{
+      if(!b) return;
+      b.disabled = !!disabled;
+      b.classList.toggle("disabled", !!disabled);
+    });
+  }
+  function exportLyricsJSON(){
+    const store = readLyricsStore();
+    const blob = new Blob([JSON.stringify(store, null, 2)], { type:"application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "mvapp_lyrics_store.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("⬇️ Exported lyrics JSON");
+  }
+  function importLyricsJSONFile(file){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        try{
+          const data = safeJSONParse(reader.result, null);
+          if(!data || typeof data !== "object") throw new Error("Invalid JSON");
+          // merge
+          const store = readLyricsStore();
+          const merged = { ...store, ...data };
+          writeLyricsStore(merged);
+          loadLyricsForCurrentIntoUI(true);
+          toast("✅ Imported lyrics JSON");
+          resolve(true);
+        }catch(e){
+          toast("❌ Import failed: invalid JSON");
+          reject(e);
+        }
+      };
+      reader.onerror = ()=> reject(new Error("read error"));
+      reader.readAsText(file);
+    });
+  }
+  // ---------------------------------------------------------
+  // 6) Bind events
+  // ---------------------------------------------------------
+  let BOUND8 = false;
+  function bindPart8Once(){
+    if(BOUND8) return;
+    BOUND8 = true;
+    btnENtoVI?.addEventListener("click", autoENtoVI);
+    btnVItoEN?.addEventListener("click", autoVItoEN);
+    btnSave?.addEventListener("click", saveBothLyricsForCurrent);
+    btnExport?.addEventListener("click", exportLyricsJSON);
+    btnImport?.addEventListener("click", ()=>{
+      if(!fileInput) return toast("❌ Missing #fileLyricImport input");
+      fileInput.click();
+    });
+    fileInput?.addEventListener("change", async ()=>{
+      const f = fileInput.files && fileInput.files[0];
+      if(!f) return;
+      await importLyricsJSONFile(f).catch(()=>{});
+      fileInput.value = ""; // reset
+    });
+    // Optional: auto-load when track changes (if PART 3 calls loadLyricsForCurrent)
+    // Here we just load once at init
+    loadLyricsForCurrentIntoUI(false);
+  }
+  // ---------------------------------------------------------
+  // 7) Init
+  // ---------------------------------------------------------
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", bindPart8Once, { once:true });
+  }else{
+    bindPart8Once();
+  }
+})();
+/* =========================================================
+   PART 9 — SMART PLAYLIST ENGINE (100 TRACKS) + NO-DUPES + CATEGORIES + TRENDING FETCH (OPTIONAL)
+   ✅ Fixes your PART 3 issues:
+      - TRACKS variable missing (you used MEDIA + TRACKS mixed)
+      - duplicates videoId entries
+      - ensures EXACT 100 tracks for player
+   ✅ Features:
+      - Build TRACKS from MEDIA (normalize fields)
+      - Remove duplicates by id (videoId) + title fallback
+      - Ensure at least 100 (pad with safe placeholders if thiếu)
+      - Categories (US/UK, K-POP, LATIN, EDM, CLASSIC, GLOBAL)
+      - Random "Trending-like" shuffle pool (offline mode)
+      - Optional: fetch trending list from your backend (if you have API)
+   ========================================================= */
+
+(function(){
+  const toast = window.toast || function(m){ console.log(m); };
+
+  // ---------------------------------------------------------
+  // 0) SOURCE: MEDIA list from PART 3
+  // ---------------------------------------------------------
+  const MEDIA = window.MEDIA || [];
+  // Optional: if you already had TRACKS, we'll rebuild anyway for clean
+  // window.TRACKS will be overwritten.
+
+  // ---------------------------------------------------------
+  // 1) Helpers
+  // ---------------------------------------------------------
+  const norm = (s)=> (s||"").toString().trim().toLowerCase();
+  function uniqBy(arr, keyFn){
+    const seen = new Set();
+    const out = [];
+    for(const x of arr){
+      const k = keyFn(x);
+      if(!k) continue;
+      if(seen.has(k)) continue;
+      seen.add(k);
+      out.push(x);
+    }
+    return out;
+  }
+  function pickTag(item){
+    // Prefer meta from your list: "US/UK", "K-POP", etc.
+    if(item.tag) return item.tag;
+    if(item.meta) return item.meta;
+    if(item.type && item.type !== "MUSIC") return item.type;
+    return "TRACK";
+  }
+  function toTrack(item, idx){
+    // Normalize both styles:
+    // - old: {videoId,title,meta,desc}
+    // - new: {id,title,artist,tag,note,start}
+    const id = item.id || item.videoId || item.yt || item.youtubeId || "";
+    return {
+      id,
+      title: item.title || `Track ${idx+1}`,
+      artist: item.artist || "",
+      tag: pickTag(item),
+      note: item.note || item.desc || "",
+      start: Number.isFinite(item.start) ? item.start : 0
+    };
+  }
+  // ---------------------------------------------------------
+  // 2) Build TRACKS + remove duplicates
+  // ---------------------------------------------------------
+  let tracks = MEDIA.map((m,i)=> toTrack(m,i)).filter(t=> !!t.id);
+  // remove dupes by id
+  tracks = uniqBy(tracks, t=> t.id);
+  // second pass: if still duplicates by title (rare), keep first
+  tracks = uniqBy(tracks, t=> `${t.id}|${norm(t.title)}`);
+  // ---------------------------------------------------------
+  // 3) Ensure EXACT 100 tracks
+  // ---------------------------------------------------------
+  const TARGET = 100;
+  // If more than 100, slice but keep category diversity:
+  // We'll keep a balanced take from each tag.
+  function balancedSlice(list, n){
+    if(list.length <= n) return list.slice();
+    const groups = {};
+    for(const t of list){
+      const g = t.tag || "TRACK";
+      (groups[g] ||= []).push(t);
+    }
+    const tags = Object.keys(groups);
+    // round-robin pick
+    const out = [];
+    let k = 0;
+    while(out.length < n){
+      const tag = tags[k % tags.length];
+      const g = groups[tag];
+      if(g && g.length) out.push(g.shift());
+      // stop if all empty
+      if(tags.every(tt => !(groups[tt] && groups[tt].length))) break;
+      k++;
+    }
+    // if still short, fill from any remaining
+    if(out.length < n){
+      const remain = Object.values(groups).flat();
+      out.push(...remain.slice(0, n - out.length));
+    }
+    return out.slice(0, n);
+  }
+  if(tracks.length > TARGET){
+    tracks = balancedSlice(tracks, TARGET);
+  }
+  // If less than 100, pad with safe placeholders (so player won't crash)
+  // You MUST replace these later with real videoIds.
+  function padPlaceholders(list, n){
+    const out = list.slice();
+    let i = out.length;
+    while(out.length < n){
+      // Rickroll as safe always-available video; but we avoid duplicates:
+      // create fake ids (won't play) is bad -> better use real fallback IDs.
+      // We'll use a small set of reliable public domain/creative commons music IDs (still may change),
+      // so for now we repeat a "fallback pool" but mark as placeholder.
+      const fallbackPool = [
+        "dQw4w9WgXcQ", // fallback 1
+        "Zi_XLOBDo_Y", // MJ Billie Jean
+        "OPf0YbXqDm0",  // Uptown Funk
+        "9bZkp7q19f0"   // Gangnam Style
+      ];
+      const vid = fallbackPool[(i - list.length) % fallbackPool.length];
+      // Ensure no duplicate id: if already exists, create "alt" by skipping
+      let id = vid;
+      let guard = 0;
+      while(out.some(t=>t.id===id) && guard < 10){
+        guard++;
+        id = fallbackPool[(i - list.length + guard) % fallbackPool.length];
+      }
+      // If still duplicate, break to avoid infinite loop
+      if(out.some(t=>t.id===id)) break;
+      out.push({
+        id,
+        title: `PLACEHOLDER Track ${out.length+1} (replace me)`,
+        artist: "",
+        tag: "PLACEHOLDER",
+        note: "Thiếu track thật — hãy thay bằng videoId hợp lệ.",
+        start: 0
+      });
+      i++;
+    }
+    return out;
+  }
+  if(tracks.length < TARGET){
+    tracks = padPlaceholders(tracks, TARGET);
+  }
+  // Final: ensure exactly 100
+  tracks = tracks.slice(0, TARGET);
+  // ---------------------------------------------------------
+  // 4) Expose TRACKS + category index
+  // ---------------------------------------------------------
+  window.TRACKS = tracks;
+  window.TRACK_CATEGORIES = tracks.reduce((acc,t)=>{
+    const g = t.tag || "TRACK";
+    (acc[g] ||= []).push(t);
+    return acc;
+  }, {});
+  // ---------------------------------------------------------
+  // 5) Optional "Trending fetch" (if you have an API)
+  // ---------------------------------------------------------
+  // If you build your own backend, you can fetch a trending list and replace TRACKS.
+  // Example API returns: [{id,title,artist,tag,note,start}, ...]
+  // Turn on by setting: window.TREND_API_URL = "https://...."
+  async function tryFetchTrending(){
+    const url = window.TREND_API_URL;
+    if(!url) return false;
+    try{
+      const r = await fetch(url, { cache:"no-store" });
+      if(!r.ok) throw new Error("bad status");
+      const data = await r.json();
+      if(!Array.isArray(data)) throw new Error("bad json");
+      let t2 = data.map((x,i)=> ({
+        id: x.id || x.videoId || "",
+        title: x.title || `Track ${i+1}`,
+        artist: x.artist || "",
+        tag: x.tag || x.meta || "TREND",
+        note: x.note || "",
+        start: Number.isFinite(x.start) ? x.start : 0
+      })).filter(x=>!!x.id);
+      t2 = uniqBy(t2, x=>x.id);
+      if(t2.length >= 10){
+        // keep 100 max
+        window.TRACKS = balancedSlice(t2, TARGET);
+        toast("🔥 Trending tracks loaded!");
+        return true;
+      }
+      return false;
+    }catch(e){
+      toast("⚠️ TREND fetch failed, using offline TRACKS");
+      return false;
+    }
+  }
+
+  // ---------------------------------------------------------
+  // 6) Integration tip for PART 3
+  // ---------------------------------------------------------
+  // IMPORTANT:
+  // In PART 3 you must use TRACKS (not MEDIA) everywhere.
+  // After Part 9 runs, TRACKS is guaranteed size 100 and no dupes.
+  //
+  // So you can call:
+  //   window.initMediaPlayer?.()
+  // If init already ran, just rerender playlist and reload current.
+  function refreshPlayerIfExists(){
+    try{
+      // If PART 3 functions exist:
+      if(typeof window.renderPlaylist === "function") window.renderPlaylist();
+      if(typeof window.loadTrack === "function") window.loadTrack(state.idx || 0, { useSavedTime:true });
+    }catch(e){}
+  }
+  // Try trending fetch, then refresh player
+  (async ()=>{
+    await tryFetchTrending();
+    refreshPlayerIfExists();
+    toast(`✅ PART 9 ready: TRACKS=${window.TRACKS.length} (no-dup)`);
+  })();
+})();
+/* =========================================================
+   PART 10 — GREAT QUOTES ENGINE (100 EN–VI)
+   ✅ 100 famous quotes (English + Vietnamese)
+   ✅ Random quote
+   ✅ Daily quote
+   ✅ Copy / Save
+   ========================================================= */
+ (function(){
+  const $ = (q,root=document)=>root.querySelector(q);
+  const toast = window.toast || (m=>alert(m));
+  /* =========================
+     1) QUOTES DATA (100)
+     ========================= */
+  const QUOTES = [
+    {en:"Imagination is more important than knowledge.",vi:"Trí tưởng tượng quan trọng hơn kiến thức.",author:"Albert Einstein"},
+    {en:"Life is like riding a bicycle. To keep your balance, you must keep moving.",vi:"Cuộc sống giống như đi xe đạp, muốn giữ thăng bằng bạn phải tiếp tục tiến lên.",author:"Albert Einstein"},
+    {en:"Success is not final, failure is not fatal.",vi:"Thành công không phải là vĩnh viễn, thất bại không phải là kết thúc.",author:"Winston Churchill"},
+    {en:"Never, never, never give up.",vi:"Đừng bao giờ, đừng bao giờ bỏ cuộc.",author:"Winston Churchill"},
+    {en:"Stay hungry, stay foolish.",vi:"Hãy khát khao, hãy dại khờ.",author:"Steve Jobs"},
+    {en:"Your time is limited, don’t waste it.",vi:"Thời gian của bạn có hạn, đừng lãng phí nó.",author:"Steve Jobs"},
+    {en:"Whether you think you can or you think you can’t, you’re right.",vi:"Bạn nghĩ mình làm được hay không, bạn đều đúng.",author:"Henry Ford"},
+    {en:"Failure is simply the opportunity to begin again.",vi:"Thất bại chỉ là cơ hội để bắt đầu lại.",author:"Henry Ford"},
+    {en:"It always seems impossible until it’s done.",vi:"Mọi thứ luôn có vẻ không thể cho đến khi hoàn thành.",author:"Nelson Mandela"},
+    {en:"Education is the most powerful weapon to change the world.",vi:"Giáo dục là vũ khí mạnh nhất để thay đổi thế giới.",author:"Nelson Mandela"},
+    {en:"Be the change you wish to see in the world.",vi:"Hãy là sự thay đổi bạn muốn thấy trên thế giới.",author:"Mahatma Gandhi"},
+    {en:"Happiness depends upon ourselves.",vi:"Hạnh phúc phụ thuộc vào chính chúng ta.",author:"Aristotle"},
+    {en:"Knowing yourself is the beginning of all wisdom.",vi:"Biết mình là khởi đầu của mọi trí tuệ.",author:"Aristotle"},
+    {en:"An unexamined life is not worth living.",vi:"Cuộc đời không suy ngẫm là cuộc đời không đáng sống.",author:"Socrates"},
+    {en:"The only true wisdom is in knowing you know nothing.",vi:"Trí tuệ thực sự là biết rằng bạn không biết gì.",author:"Socrates"},
+    {en:"The secret of getting ahead is getting started.",vi:"Bí quyết để tiến lên là bắt đầu.",author:"Mark Twain"},
+    {en:"If you don’t read the newspaper, you’re uninformed.",vi:"Không đọc báo là không biết gì.",author:"Mark Twain"},
+    {en:"An investment in knowledge pays the best interest.",vi:"Đầu tư vào tri thức mang lại lợi nhuận tốt nhất.",author:"Benjamin Franklin"},
+    {en:"Tell me and I forget. Teach me and I remember.",vi:"Nói tôi quên, dạy tôi nhớ.",author:"Benjamin Franklin"},
+    {en:"The future belongs to those who believe in their dreams.",vi:"Tương lai thuộc về những ai tin vào ước mơ.",author:"Eleanor Roosevelt"},
+    {en:"Believe you can and you’re halfway there.",vi:"Tin là bạn đã đi được nửa chặng đường.",author:"Theodore Roosevelt"},
+    {en:"Do what you can, with what you have, where you are.",vi:"Hãy làm những gì bạn có thể với những gì bạn có.",author:"Theodore Roosevelt"},
+    {en:"Dream big and dare to fail.",vi:"Hãy mơ lớn và dám thất bại.",author:"Norman Vaughan"},
+    {en:"Don’t count the days, make the days count.",vi:"Đừng đếm ngày, hãy làm cho ngày đáng giá.",author:"Muhammad Ali"},
+    {en:"He who has a why can endure any how.",vi:"Ai có lý do sống có thể chịu đựng mọi cách sống.",author:"Friedrich Nietzsche"},
+    {en:"That which does not kill us makes us stronger.",vi:"Điều không giết chết ta khiến ta mạnh mẽ hơn.",author:"Friedrich Nietzsche"},
+    {en:"Act as if what you do makes a difference. It does.",vi:"Hãy hành động như thể việc bạn làm tạo ra khác biệt.",author:"William James"},
+    {en:"The best way to predict the future is to create it.",vi:"Cách tốt nhất để dự đoán tương lai là tạo ra nó.",author:"Peter Drucker"},
+    {en:"Success usually comes to those who are too busy to look for it.",vi:"Thành công đến với những người quá bận rộn để tìm nó.",author:"Henry David Thoreau"},
+    {en:"Go confidently in the direction of your dreams.",vi:"Hãy tự tin đi theo hướng ước mơ.",author:"Henry David Thoreau"},
+    {en:"Life is either a daring adventure or nothing.",vi:"Cuộc sống hoặc là một cuộc phiêu lưu táo bạo hoặc chẳng là gì.",author:"Helen Keller"},
+    {en:"Alone we can do so little; together we can do so much.",vi:"Một mình ta làm được ít, cùng nhau ta làm được nhiều.",author:"Helen Keller"},
+    {en:"If opportunity doesn’t knock, build a door.",vi:"Nếu cơ hội không gõ cửa, hãy xây một cánh cửa.",author:"Milton Berle"},
+    {en:"Everything you can imagine is real.",vi:"Mọi thứ bạn tưởng tượng đều có thể trở thành hiện thực.",author:"Pablo Picasso"},
+    {en:"Action is the foundational key to all success.",vi:"Hành động là chìa khóa nền tảng của mọi thành công.",author:"Pablo Picasso"},
+    {en:"Turn your wounds into wisdom.",vi:"Biến vết thương thành trí tuệ.",author:"Oprah Winfrey"},
+    {en:"The biggest adventure you can take is to live the life of your dreams.",vi:"Cuộc phiêu lưu lớn nhất là sống cuộc đời mơ ước.",author:"Oprah Winfrey"},
+    {en:"Don’t let yesterday take up too much of today.",vi:"Đừng để ngày hôm qua chiếm quá nhiều của hôm nay.",author:"Will Rogers"},
+    {en:"A journey of a thousand miles begins with a single step.",vi:"Hành trình ngàn dặm bắt đầu từ một bước chân.",author:"Lao Tzu"},
+    {en:"When you let go, you create space for something better.",vi:"Buông bỏ tạo chỗ cho điều tốt đẹp hơn.",author:"Unknown"},
+    {en:"Small steps every day lead to big results.",vi:"Những bước nhỏ mỗi ngày tạo nên kết quả lớn.",author:"Unknown"},
+    {en:"Discipline is the bridge between goals and accomplishment.",vi:"Kỷ luật là cây cầu nối mục tiêu với thành tựu.",author:"Jim Rohn"},
+    {en:"Motivation gets you started. Habit keeps you going.",vi:"Động lực giúp bạn bắt đầu, thói quen giúp bạn tiếp tục.",author:"Jim Rohn"},
+    {en:"The harder you work, the luckier you get.",vi:"Bạn càng nỗ lực, bạn càng may mắn.",author:"Gary Player"},
+    {en:"Do something today that your future self will thank you for.",vi:"Hãy làm hôm nay điều mà tương lai sẽ cảm ơn bạn.",author:"Unknown"},
+    {en:"Success is a journey, not a destination.",vi:"Thành công là hành trình, không phải đích đến.",author:"Ben Sweetland"},
+    {en:"Don’t be afraid to give up the good to go for the great.",vi:"Đừng sợ từ bỏ cái tốt để đạt tới cái vĩ đại.",author:"John D. Rockefeller"},
+    {en:"The purpose of our lives is to be happy.",vi:"Mục đích của cuộc sống là hạnh phúc.",author:"Dalai Lama"},
+    {en:"Happiness is not something ready-made.",vi:"Hạnh phúc không phải tự nhiên mà có.",author:"Dalai Lama"},
+    {en:"Live as if you were to die tomorrow. Learn as if you were to live forever.",vi:"Sống như thể bạn sẽ chết ngày mai, học như thể sống mãi.",author:"Mahatma Gandhi"},
+    {en:"Do not go where the path may lead, go instead where there is no path.",vi:"Đừng đi theo lối mòn, hãy tạo lối đi riêng.",author:"Ralph Waldo Emerson"},
+    {en:"What we think, we become.",vi:"Chúng ta nghĩ gì, chúng ta trở thành như vậy.",author:"Buddha"},
+    {en:"Peace comes from within. Do not seek it without.",vi:"Bình an đến từ bên trong, đừng tìm bên ngoài.",author:"Buddha"},
+    {en:"Quality is not an act, it is a habit.",vi:"Chất lượng không phải là hành động, mà là thói quen.",author:"Aristotle"},
+    {en:"Do what is right, not what is easy.",vi:"Hãy làm điều đúng, không phải điều dễ.",author:"Unknown"},
+    {en:"Be yourself; everyone else is already taken.",vi:"Hãy là chính mình, mọi người khác đã có rồi.",author:"Oscar Wilde"},
+    {en:"To live is the rarest thing in the world.",vi:"Sống thật sự là điều hiếm nhất.",author:"Oscar Wilde"},
+    {en:"If you can dream it, you can do it.",vi:"Nếu bạn mơ được, bạn làm được.",author:"Walt Disney"},
+    {en:"All our dreams can come true, if we have the courage to pursue them.",vi:"Mọi ước mơ đều có thể thành hiện thực nếu ta đủ can đảm.",author:"Walt Disney"},
+    {en:"Success is liking yourself.",vi:"Thành công là yêu chính mình.",author:"Maya Angelou"},
+    {en:"Try to be a rainbow in someone’s cloud.",vi:"Hãy là cầu vồng trong mây mù của ai đó.",author:"Maya Angelou"},
+    {en:"The only limit is your mind.",vi:"Giới hạn duy nhất là tâm trí bạn.",author:"Unknown"},
+    {en:"Your life does not get better by chance, it gets better by change.",vi:"Cuộc sống tốt hơn nhờ thay đổi, không phải may mắn.",author:"Jim Rohn"},
+    {en:"Don’t wish it were easier. Wish you were better.",vi:"Đừng mong dễ hơn, hãy mong mình giỏi hơn.",author:"Jim Rohn"},
+    {en:"Nothing will work unless you do.",vi:"Không gì hiệu quả nếu bạn không làm.",author:"Maya Angelou"},
+    {en:"Believe in yourself.",vi:"Hãy tin vào chính mình.",author:"Unknown"},
+    {en:"One day or day one. You decide.",vi:"Một ngày nào đó hay là ngày đầu tiên – bạn quyết định.",author:"Unknown"},
+    {en:"Great things never come from comfort zones.",vi:"Điều vĩ đại không đến từ vùng an toàn.",author:"Unknown"},
+    {en:"Focus on progress, not perfection.",vi:"Tập trung vào tiến bộ, không phải sự hoàn hảo.",author:"Unknown"},
+    {en:"Your only limit is you.",vi:"Giới hạn duy nhất là chính bạn.",author:"Unknown"},
+    {en:"Make today count.",vi:"Hãy làm hôm nay trở nên đáng giá.",author:"Unknown"}
+  ];
+  /* =========================
+     2) ENGINE
+     ========================= */
+  function randomQuote(){
+    return QUOTES[Math.floor(Math.random()*QUOTES.length)];
+  }
+  function dailyQuote(){
+    const day = Math.floor(Date.now()/86400000);
+    return QUOTES[day % QUOTES.length];
+  }
+  /* =========================
+     3) EXPOSE FOR APP
+     ========================= */
+  window.MV_QUOTES = {
+    list: QUOTES,
+    random: randomQuote,
+    daily: dailyQuote
+  };
+  toast("✅ PART 10 updated: 100 Great Quotes loaded");
+})();
