@@ -1932,7 +1932,6 @@ function playByIndex(index) {
 }
 </script>
 
-
 // Lyrics/Notes elements
 const lyricText = document.getElementById("lyricText");
 const btnSaveLyric = document.getElementById("btnSaveLyric");
@@ -2182,7 +2181,7 @@ function setActiveTrackByIndex(idx){
   if(!item) return;
   currentIndex = idx;
 
-  ytPlayer.src = ytEmbedUrl(item.videoId);
+  playById(item.videoId);
   nowTypeEl.textContent  = `TYPE: ${item.type}`;
   nowTitleEl.textContent = `NOW: ${item.title}`;
   nowModeEl.textContent  = `MODE: Autoplay ${autoplay ? "ON" : "OFF"} • Loop ${loop ? "ON" : "OFF"}`;
