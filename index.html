@@ -2040,6 +2040,31 @@ const MEDIA = [
 { type: "vevo", title: "Final Call", artist: "Last Signal", videoId: "VIDEO_ID_49" },
 { type: "vevo", title: "Rise Again", artist: "Nova Rise", videoId: "VIDEO_ID_50" },  
 ];
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+/* =========================
+   MEDIA PLAYER PRO (FIX)
+   - Accepts videoId OR full YouTube URL
+   - Auto next, Shuffle, Repeat (off/one/all)
+   - Skip broken/unplayable videos automatically
+========================= */
+
+// 1) LIST: dùng url cho chắc (anh có thể thêm 50+50 ở đây)
+const MEDIA = [
+  // --- VEVO / International examples (add more) ---
+  { type:"vevo", title:"Despacito", artist:"Luis Fonsi", url:"https://www.youtube.com/watch?v=kJQP7kiw5Fk" },
+  { type:"vevo", title:"Shape of You", artist:"Ed Sheeran", url:"https://www.youtube.com/watch?v=JGwWNGJdvx8" },
+  { type:"vevo", title:"Uptown Funk", artist:"Mark Ronson ft. Bruno Mars", url:"https://www.youtube.com/watch?v=OPf0YbXqDm0" },
+  { type:"vevo", title:"See You Again", artist:"Wiz Khalifa ft. Charlie Puth", url:"https://www.youtube.com/watch?v=RgKAFK5djSk" },
+  { type:"vevo", title:"Roar", artist:"Katy Perry", url:"https://www.youtube.com/watch?v=CevxZvSJLk8" },
+
+  // --- Vietnam examples (add more) ---
+  { type:"vpop", title:"Lạc Trôi", artist:"Sơn Tùng M-TP", url:"https://www.youtube.com/watch?v=Llw9Q6akRo4" },
+  { type:"vpop", title:"Hãy Trao Cho Anh", artist:"Sơn Tùng M-TP", url:"https://www.youtube.com/watch?v=knW7-x7Y7RE" },
+  { type:"vpop", title:"Chạy Ngay Đi", artist:"Sơn Tùng M-TP", url:"https://www.youtube.com/watch?v=32sYGCOYJUM" },
+  { type:"vpop", title:"Bạc Phận", artist:"K-ICM x Jack", url:"https://www.youtube.com/watch?v=Vt4o2FzJp5U" },
+  { type:"vpop", title:"Sóng Gió", artist:"K-ICM x Jack", url:"https://www.youtube.com/watch?v=3AtDnEC4zak" },
+];
 
 
     /********************
