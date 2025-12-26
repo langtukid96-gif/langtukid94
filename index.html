@@ -1193,6 +1193,9 @@
         <button class="miniBtn" id="btnLoop" type="button">🔁 Loop: <span id="lpState">OFF</span></button>
         <button class="miniBtn" id="btnCopyMedia" type="button">🔗 Copy video link</button>
         <button class="miniBtn" id="btnOpenYT" type="button">▶️ Open on YouTube</button>
+        <button class="btnMini" id="btnShuffle" type="button">🔀 Random: <b id="shState">OFF</b></button>
+        <button class="btnMini" id="btnRepeat" type="button">🔁 Repeat: <b id="rpState">ALL</b></button>
+
       </div>
 
       <!-- LYRIC / NOTES -->
@@ -1854,19 +1857,81 @@
     /********************
  * 8) ✅ MEDIA PLAYER (YouTube) — SEARCH + SCROLL + LYRIC NOTES (localStorage)
  ********************/
-const ytPlayer = document.getElementById("ytPlayer");
-const playlistEl = document.getElementById("playlist");
-const nowTypeEl  = document.getElementById("nowType");
-const nowTitleEl = document.getElementById("nowTitle");
-const nowModeEl  = document.getElementById("nowMode");
+<!-- YOUTUBE IFRAME API -->
+<script src="https://www.youtube.com/iframe_api"></script>
 
-const mediaSearch = document.getElementById("mediaSearch");
-const mediaType   = document.getElementById("mediaType");
-const btnMediaReset = document.getElementById("btnMediaReset");
+<script>
+/* ========= MEDIA PLAYER PRO ========= */
+/* Random + Auto Next + Repeat */
 
 let autoplay = true;
-let loop = false;
+let loop = false;        // loop 1 bài
+let shuffle = false;     // random
+let repeatMode = "all";  // off | one | all
 let currentIndex = 0;
+
+let player;
+
+function onYouTubeIframeAPIReady() {}
+
+  player = new YT.Player("ytPlayer", {
+    videoId: MEDIA[0].videoId,
+    playerVars: { autoplay: 1, rel: 0 },
+    events: {
+      onStateChange: onPlayerStateChange
+    }
+  });
+}
+
+function onPlayerStateChange(event) {
+  if (event.data === YT.PlayerState.ENDED) {
+    handleNext();
+  }
+}
+
+function handleNext() {
+  if (loop || repeatMode === "one") {
+    player.seekTo(0);
+    player.playVideo();
+    return;
+  }
+
+  if (!autoplay) return;
+
+  let nextIndex;
+  if (shuffle) {
+    do {
+      nextIndex = Math.floor(Math.random() * MEDIA.length);
+    } while (nextIndex === currentIndex);
+  } else {
+    nextIndex = currentIndex + 1;
+    if (nextIndex >= MEDIA.length) {
+      if (repeatMode === "all") nextIndex = 0;
+      else return;
+    }
+  }
+  playByIndex(nextIndex);
+}
+
+function playByIndex(index) {
+  currentIndex = index;
+  const item = MEDIA[index];
+  player.loadVideoById(item.videoId);
+
+  document.querySelectorAll(".track").forEach(el =>
+    el.classList.remove("active")
+  );
+  document
+    .querySelector(`.track[data-idx="${index}"]`)
+    ?.classList.add("active");
+
+  nowTypeEl.textContent = item.type;
+  nowTitleEl.textContent = item.title;
+  nowModeEl.textContent =
+    `AUTO:${autoplay?"ON":"OFF"} | LOOP:${loop?"ON":"OFF"} | RAND:${shuffle?"ON":"OFF"} | REP:${repeatMode}`;
+}
+</script>
+
 
 // Lyrics/Notes elements
 const lyricText = document.getElementById("lyricText");
@@ -1874,7 +1939,7 @@ const btnSaveLyric = document.getElementById("btnSaveLyric");
 const btnClearLyric = document.getElementById("btnClearLyric");
 const btnCopyLyric = document.getElementById("btnCopyLyric");
 
-// ✅ 30 bài phổ biến (anh muốn “tỷ view”)
+// ✅ Những bài phổ biến (anh muốn “tỷ view”)
 // (Lưu ý: con số view thay đổi theo thời gian, đây là danh sách bài cực nổi tiếng)
 const MEDIA = [
   { type:"MUSIC", title:"Despacito — Luis Fonsi ft. Daddy Yankee", meta:"GLOBAL", desc:"Official video.", videoId:"kJQP7kiw5Fk" },
