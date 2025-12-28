@@ -1851,229 +1851,213 @@
       });
     });
 
-    /********************
- * 8) ✅ MEDIA PLAYER (YouTube) — SEARCH + SCROLL + LYRIC NOTES (localStorage)
+entById("btnCopyLyric");
+<!-- MEDIA -->
+<section id="media">
+  <div class="titleRow">
+    <h2>Media (Music Player)</h2>
+    <span class="muted2" style="font-weight:800">
+      VEVO • Việt Nam • Search • Lyrics • Autoplay
+    </span>
+  </div>
+
+  <div class="grid mediaGrid">
+    <!-- LEFT -->
+    <div class="card pad">
+      <div class="item">
+        <h3>🎬 Player</h3>
+        <div class="tagRow">
+          <span class="chip" id="nowType">TYPE: MUSIC</span>
+          <span class="chip" id="nowTitle">NOW: ...</span>
+          <span class="chip" id="nowMode">MODE: Autoplay ON</span>
+        </div>
+      </div>
+
+      <div class="playerBox" style="margin-top:12px">
+        <iframe id="ytPlayer" allowfullscreen></iframe>
+      </div>
+
+      <div class="miniBtns">
+        <button class="miniBtn" id="btnAutoplay">⚡ Autoplay: <span id="apState">ON</span></button>
+        <button class="miniBtn" id="btnLoop">🔁 Loop: <span id="lpState">OFF</span></button>
+        <button class="miniBtn" id="btnCopyMedia">🔗 Copy link</button>
+        <button class="miniBtn" id="btnOpenYT">▶️ Open YouTube</button>
+      </div>
+
+      <!-- LYRIC -->
+      <div class="lyricBox">
+        <div class="lyricHead">
+          <b>📝 Lyrics / Notes</b>
+          <span class="lyricHint">Auto-save</span>
+        </div>
+        <div class="lyricBody">
+          <textarea id="lyricText" class="lyricText"
+            placeholder="Dán lyric / ghi chú học tiếng Anh..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="card pad">
+      <div class="playlistTools">
+        <select class="select" id="playlistMode">
+          <option value="vevo">🌍 VEVO / Global (50)</option>
+          <option value="vn">🇻🇳 Việt Nam (50)</option>
+        </select>
+
+        <input class="input" id="mediaSearch" placeholder="🔎 Tìm bài hát..." />
+
+        <button class="btn" id="btnMediaReset">
+          <span class="ico">🧽</span>Reset
+        </button>
+      </div>
+
+      <div class="playlistScroll" style="margin-top:12px">
+        <div class="playlist" id="playlist"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+/********************
+ * MEDIA PLAYER – FINAL FIXED
  ********************/
 const ytPlayer = document.getElementById("ytPlayer");
 const playlistEl = document.getElementById("playlist");
-const nowTypeEl  = document.getElementById("nowType");
+const nowTypeEl = document.getElementById("nowType");
 const nowTitleEl = document.getElementById("nowTitle");
-const nowModeEl  = document.getElementById("nowMode");
+const nowModeEl = document.getElementById("nowMode");
 
 const mediaSearch = document.getElementById("mediaSearch");
-const mediaType   = document.getElementById("mediaType");
+const playlistMode = document.getElementById("playlistMode");
 const btnMediaReset = document.getElementById("btnMediaReset");
+
+const lyricText = document.getElementById("lyricText");
 
 let autoplay = true;
 let loop = false;
 let currentIndex = 0;
 
-// Lyrics/Notes elements
-const lyricText = document.getElementById("lyricText");
-const btnSaveLyric = document.getElementById("btnSaveLyric");
-const btnClearLyric = document.getElementById("btnClearLyric");
-const btnCopyLyric = document.getElementById("btnCopyLyric");
-
-// ✅ 30 bài phổ biến (anh muốn “tỷ view”)
-// (Lưu ý: con số view thay đổi theo thời gian, đây là danh sách bài cực nổi tiếng)
-const MEDIA = [
-  { type:"MUSIC", title:"Despacito — Luis Fonsi ft. Daddy Yankee", meta:"GLOBAL", desc:"Official video.", videoId:"kJQP7kiw5Fk" },
-  { type:"MUSIC", title:"See You Again — Wiz Khalifa ft. Charlie Puth", meta:"US/UK", desc:"Official video.", videoId:"RgKAFK5djSk" },
-  { type:"MUSIC", title:"Shape of You — Ed Sheeran", meta:"US/UK", desc:"Official video.", videoId:"JGwWNGJdvx8" },
-  { type:"MUSIC", title:"Uptown Funk — Mark Ronson ft. Bruno Mars", meta:"US/UK", desc:"Official video.", videoId:"OPf0YbXqDm0" },
-  { type:"MUSIC", title:"Gangnam Style — PSY", meta:"K-POP", desc:"Official video.", videoId:"9bZkp7q19f0" },
-  { type:"MUSIC", title:"Sugar — Maroon 5", meta:"US/UK", desc:"Official video.", videoId:"09R8_2nJtjg" },
-  { type:"MUSIC", title:"Roar — Katy Perry", meta:"US/UK", desc:"Official video.", videoId:"CevxZvSJLk8" },
-  { type:"MUSIC", title:"Sorry — Justin Bieber", meta:"US/UK", desc:"Official video.", videoId:"fRh_vgS2dFE" },
-  { type:"MUSIC", title:"Thinking Out Loud — Ed Sheeran", meta:"US/UK", desc:"Official video.", videoId:"lp-EO5I60KA" },
-  { type:"MUSIC", title:"Counting Stars — OneRepublic", meta:"US/UK", desc:"Official video.", videoId:"hT_nvWreIhg" },
-  { type:"MUSIC", title:"Dark Horse — Katy Perry", meta:"US/UK", desc:"Official video.", videoId:"0KSOMA3QBU0" },
-  { type:"MUSIC", title:"Faded — Alan Walker", meta:"EDM", desc:"Official video.", videoId:"60ItHLz5WEA" },
-  { type:"MUSIC", title:"Believer — Imagine Dragons", meta:"US/UK", desc:"Official video.", videoId:"7wtfhZwyrcc" },
-  { type:"MUSIC", title:"Lean On — Major Lazer & DJ Snake", meta:"EDM", desc:"Official video.", videoId:"YqeW9_5kURI" },
-  { type:"MUSIC", title:"Perfect — Ed Sheeran", meta:"US/UK", desc:"Official video.", videoId:"2Vv-BfVoq4g" },
-  { type:"MUSIC", title:"Havana — Camila Cabello", meta:"US/UK", desc:"Official video.", videoId:"HCjNJDNzw8Y" },
-  { type:"MUSIC", title:"Bad Guy — Billie Eilish", meta:"US/UK", desc:"Official video.", videoId:"DyDfgMOUjCI" },
-  { type:"MUSIC", title:"Closer — The Chainsmokers ft. Halsey", meta:"US/UK", desc:"Official video.", videoId:"0zGcUoRlhmw" },
-  { type:"MUSIC", title:"Girls Like You — Maroon 5 ft. Cardi B", meta:"US/UK", desc:"Official video.", videoId:"aJOTlE1K90k" },
-  { type:"MUSIC", title:"Cheap Thrills — Sia", meta:"US/UK", desc:"Official video.", videoId:"nYh-n7EOtMA" },
-  { type:"MUSIC", title:"Hello — Adele", meta:"US/UK", desc:"Official video.", videoId:"YQHsXMglC9A" },
-  { type:"MUSIC", title:"All About That Bass — Meghan Trainor", meta:"US/UK", desc:"Official video.", videoId:"7PCkvCPvDXk" },
-  { type:"MUSIC", title:"Waka Waka — Shakira", meta:"GLOBAL", desc:"Official video.", videoId:"pRpeEdMmmQ0" },
-  { type:"MUSIC", title:"Chandelier — Sia", meta:"US/UK", desc:"Official video.", videoId:"2vjPBrBU-TM" },
-  { type:"MUSIC", title:"Love The Way You Lie — Eminem ft. Rihanna", meta:"US/UK", desc:"Official video.", videoId:"uelHwf8o7_U" },
-  { type:"MUSIC", title:"Let Her Go — Passenger", meta:"US/UK", desc:"Official video.", videoId:"RBumgq5yVrA" },
-  { type:"MUSIC", title:"Blank Space — Taylor Swift", meta:"US/UK", desc:"Official video.", videoId:"e-ORhEE9VVg" },
-  { type:"MUSIC", title:"Thunder — Imagine Dragons", meta:"US/UK", desc:"Official video.", videoId:"fKopy74weus" },
-  { type:"MUSIC", title:"On The Floor — Jennifer Lopez ft. Pitbull", meta:"US/UK", desc:"Official video.", videoId:"t4H_Zoh7G5A" },
-  { type:"MUSIC", title:"Dame Tu Cosita — El Chombo", meta:"GLOBAL", desc:"Official video.", videoId:"FzG4uDgje3M" },
+/* ===== DATA ===== */
+const MEDIA_VEVO = [
+  {type:"VEVO",title:"Despacito — Luis Fonsi",videoId:"kJQP7kiw5Fk"},
+  {type:"VEVO",title:"Shape of You — Ed Sheeran",videoId:"JGwWNGJdvx8"},
+  {type:"VEVO",title:"See You Again — Wiz Khalifa",videoId:"RgKAFK5djSk"},
+  {type:"VEVO",title:"Uptown Funk — Mark Ronson",videoId:"OPf0YbXqDm0"},
+  {type:"VEVO",title:"Sugar — Maroon 5",videoId:"09R8_2nJtjg"},
+  {type:"VEVO",title:"Hello — Adele",videoId:"YQHsXMglC9A"},
 ];
 
-function ytEmbedUrl(videoId){
-  const params = new URLSearchParams();
-  params.set("rel","0");
-  params.set("modestbranding","1");
-  params.set("playsinline","1");
-  if(autoplay) params.set("autoplay","1");
+const MEDIA_VN = [
+  {type:"VN",title:"Sóng GióPT — Jack x K-ICM",videoId:"j8U06veqxdU"},
+  {type:"VN",title:"Bạc Phận — Jack x K-ICM",videoId:"WX7dUj14Z00"},
+  {type:"VN",title:"Hồng Nhan — Jack",videoId:"8x2NjwwHUbQ"},
+  {type:"VN",title:"Nơi Này Có Anh — Sơn Tùng",videoId:"FN7ALfpGxiI"},
+  {type:"VN",title:"Lạc Trôi — Sơn Tùng",videoId:"Llw9Q6akRo4"},
+  {type:"VN",title:"Chạy Ngay Đi — Sơn Tùng",videoId:"32sYGCOYJUM"},
+];
+
+let MEDIA = MEDIA_VEVO;
+
+/* ===== FUNCTIONS ===== */
+function ytEmbedUrl(id){
+  const p = new URLSearchParams();
+  if(autoplay) p.set("autoplay","1");
   if(loop){
-    params.set("loop","1");
-    params.set("playlist", videoId);
+    p.set("loop","1");
+    p.set("playlist", id);
   }
-  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+  return `https://www.youtube.com/embed/${id}?${p.toString()}`;
 }
 
-function getLyricKey(videoId){
-  return `media_lyric_${videoId}`;
+function saveLyric(id){
+  localStorage.setItem("lyric_"+id, lyricText.value || "");
 }
 
-function loadLyricFor(videoId){
-  const saved = localStorage.getItem(getLyricKey(videoId)) || "";
-  lyricText.value = saved;
+function loadLyric(id){
+  lyricText.value = localStorage.getItem("lyric_"+id) || "";
 }
 
-function saveLyricFor(videoId){
-  localStorage.setItem(getLyricKey(videoId), lyricText.value || "");
-}
-
-let lyricAutosaveTimer = null;
-lyricText.addEventListener("input", ()=>{
-  if(!MEDIA[currentIndex]) return;
-  clearTimeout(lyricAutosaveTimer);
-  lyricAutosaveTimer = setTimeout(()=>{
-    saveLyricFor(MEDIA[currentIndex].videoId);
-    toast("Saved ✅");
-  }, 550);
-});
-
-btnSaveLyric.addEventListener("click", ()=>{
-  if(!MEDIA[currentIndex]) return;
-  saveLyricFor(MEDIA[currentIndex].videoId);
-  toast("Saved ✅");
-});
-
-btnClearLyric.addEventListener("click", ()=>{
-  if(!MEDIA[currentIndex]) return;
-  lyricText.value = "";
-  saveLyricFor(MEDIA[currentIndex].videoId);
-  toast("Cleared ✅");
-});
-
-btnCopyLyric.addEventListener("click", async ()=>{
-  try{
-    await navigator.clipboard.writeText(lyricText.value || "");
-    toast("Copied ✅");
-  }catch(e){
-    toast("Copy failed");
-  }
-});
-
-function setActiveTrackByIndex(idx){
+function setActive(idx){
   const item = MEDIA[idx];
   if(!item) return;
+
   currentIndex = idx;
-
   ytPlayer.src = ytEmbedUrl(item.videoId);
-  nowTypeEl.textContent  = `TYPE: ${item.type}`;
-  nowTitleEl.textContent = `NOW: ${item.title}`;
-  nowModeEl.textContent  = `MODE: Autoplay ${autoplay ? "ON" : "OFF"} • Loop ${loop ? "ON" : "OFF"}`;
+  nowTypeEl.textContent = "TYPE: " + item.type;
+  nowTitleEl.textContent = "NOW: " + item.title;
+  nowModeEl.textContent = `MODE: Autoplay ${autoplay?"ON":"OFF"} • Loop ${loop?"ON":"OFF"}`;
 
-  document.querySelectorAll(".track").forEach(el=>el.classList.remove("active"));
+  document.querySelectorAll(".track").forEach(t=>t.classList.remove("active"));
   const active = document.querySelector(`.track[data-idx="${idx}"]`);
   if(active) active.classList.add("active");
 
-  loadLyricFor(item.videoId);
-}
-
-function buildTrackHTML(m, idx){
-  return `
-    <div class="track" data-idx="${idx}">
-      <div class="trackTop">
-        <div class="trackTitle">${m.title}</div>
-        <div class="trackMeta">${m.meta}</div>
-      </div>
-      <p class="trackDesc">${m.desc}</p>
-    </div>
-  `;
+  loadLyric(item.videoId);
 }
 
 function renderPlaylist(){
-  const query = (mediaSearch.value || "").trim().toLowerCase();
-  const typeFilter = (mediaType.value || "all").toLowerCase();
+  const q = (mediaSearch.value || "").toLowerCase();
 
-  // Render all tracks but hide those not matching (giữ index chuẩn để click đúng bài)
-  playlistEl.innerHTML = MEDIA.map((m, idx)=>{
-    const okQ = !query ? true : (m.title.toLowerCase().includes(query) || (m.meta||"").toLowerCase().includes(query));
-    const okT = (typeFilter === "all") ? true : (m.type || "").toLowerCase() === typeFilter;
-    const hidden = !(okQ && okT);
-    return `<div style="${hidden ? "display:none" : ""}">${buildTrackHTML(m, idx)}</div>`;
+  playlistEl.innerHTML = MEDIA.map((m,i)=>{
+    if(q && !m.title.toLowerCase().includes(q)) return "";
+    return `
+      <div class="track" data-idx="${i}">
+        <div class="trackTitle">${m.title}</div>
+        <div class="trackMeta">${m.type}</div>
+      </div>
+    `;
   }).join("");
 
-  // bind click
   playlistEl.querySelectorAll(".track").forEach(el=>{
     el.addEventListener("click", ()=>{
-      const idx = Number(el.getAttribute("data-idx"));
-      setActiveTrackByIndex(idx);
-      toast("Switched ✅");
+      setActive(Number(el.dataset.idx));
     });
   });
-
-  // highlight current
-  const active = document.querySelector(`.track[data-idx="${currentIndex}"]`);
-  if(active) active.classList.add("active");
 }
 
-renderPlaylist();
-
-// Default: mở bài đầu tiên
-setActiveTrackByIndex(0);
-
-const apState = document.getElementById("apState");
-const lpState = document.getElementById("lpState");
-
-document.getElementById("btnAutoplay").addEventListener("click", ()=>{
-  autoplay = !autoplay;
-  apState.textContent = autoplay ? "ON" : "OFF";
-  ytPlayer.src = ytEmbedUrl(MEDIA[currentIndex].videoId);
-  nowModeEl.textContent = `MODE: Autoplay ${autoplay ? "ON" : "OFF"} • Loop ${loop ? "ON" : "OFF"}`;
-  toast("Autoplay " + (autoplay ? "ON" : "OFF"));
+/* ===== EVENTS ===== */
+playlistMode.addEventListener("change", ()=>{
+  MEDIA = playlistMode.value === "vn" ? MEDIA_VN : MEDIA_VEVO;
+  currentIndex = 0;
+  renderPlaylist();
+  setActive(0);
 });
 
-document.getElementById("btnLoop").addEventListener("click", ()=>{
-  loop = !loop;
-  lpState.textContent = loop ? "ON" : "OFF";
-  ytPlayer.src = ytEmbedUrl(MEDIA[currentIndex].videoId);
-  nowModeEl.textContent = `MODE: Autoplay ${autoplay ? "ON" : "OFF"} • Loop ${loop ? "ON" : "OFF"}`;
-  toast("Loop " + (loop ? "ON" : "OFF"));
-});
-
-document.getElementById("btnCopyMedia").addEventListener("click", async ()=>{
-  const item = MEDIA[currentIndex];
-  if(!item) return;
-  const url = `https://www.youtube.com/watch?v=${item.videoId}`;
-  try{
-    await navigator.clipboard.writeText(url);
-    toast("Copied video link ✅");
-  }catch(e){
-    toast("Copy failed");
-  }
-});
-
-document.getElementById("btnOpenYT").addEventListener("click", ()=>{
-  const item = MEDIA[currentIndex];
-  if(!item) return;
-  window.open(`https://www.youtube.com/watch?v=${item.videoId}`, "_blank", "noopener");
-});
-
-// Search + filter
 mediaSearch.addEventListener("input", renderPlaylist);
-mediaType.addEventListener("change", renderPlaylist);
 
 btnMediaReset.addEventListener("click", ()=>{
   mediaSearch.value = "";
-  mediaType.value = "all";
   renderPlaylist();
-  toast("Reset ✅");
 });
+
+lyricText.addEventListener("input", ()=>{
+  if(MEDIA[currentIndex]) saveLyric(MEDIA[currentIndex].videoId);
+});
+
+document.getElementById("btnAutoplay").onclick = ()=>{
+  autoplay = !autoplay;
+  document.getElementById("apState").textContent = autoplay?"ON":"OFF";
+  setActive(currentIndex);
+};
+
+document.getElementById("btnLoop").onclick = ()=>{
+  loop = !loop;
+  document.getElementById("lpState").textContent = loop?"ON":"OFF";
+  setActive(currentIndex);
+};
+
+document.getElementById("btnCopyMedia").onclick = ()=>{
+  navigator.clipboard.writeText(`https://youtu.be/${MEDIA[currentIndex].videoId}`);
+  toast("Copied ✅");
+};
+
+document.getElementById("btnOpenYT").onclick = ()=>{
+  window.open(`https://youtu.be/${MEDIA[currentIndex].videoId}`,"_blank");
+};
+
+/* INIT */
+renderPlaylist();
+setActive(0);
 
     /********************
      * 9) QR GENERATOR
