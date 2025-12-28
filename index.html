@@ -1694,6 +1694,36 @@
         desc:"Kế hoạch nội dung: bài viết ngắn, chủ đề AI thú y, chia sẻ học tập.",
         details:["6 bài mẫu","Lịch đăng","Gợi ý tiêu đề"]},
     ];
+    /********************
+ * FIX MEDIA UNDEFINED (VPOP + thiếu field)
+ ********************/
+function normalizeMedia(list){
+  const seen = new Set();
+  const out = [];
+
+  for(const raw of list){
+    if(!raw || !raw.videoId) continue;
+
+    // bỏ trùng videoId
+    if(seen.has(raw.videoId)) continue;
+    seen.add(raw.videoId);
+
+    out.push({
+      type: (raw.type || "MUSIC").toUpperCase(),
+      title: raw.title || "(Untitled)",
+      meta: raw.meta || "VPOP / MUSIC",
+      desc: raw.desc || "Official video.",
+      videoId: raw.videoId
+    });
+  }
+  return out;
+}
+
+// ghi đè lại MEDIA
+const MEDIA_FIXED = normalizeMedia(MEDIA);
+MEDIA.length = 0;
+MEDIA.push(...MEDIA_FIXED);
+
 
     const grid = document.getElementById("projGrid");
     const q = document.getElementById("q");
@@ -1851,213 +1881,191 @@
       });
     });
 
-entById("btnCopyLyric");
-<!-- MEDIA -->
-<section id="media">
-  <div class="titleRow">
-    <h2>Media (Music Player)</h2>
-    <span class="muted2" style="font-weight:800">
-      VEVO • Việt Nam • Search • Lyrics • Autoplay
-    </span>
-  </div>
-
-  <div class="grid mediaGrid">
-    <!-- LEFT -->
-    <div class="card pad">
-      <div class="item">
-        <h3>🎬 Player</h3>
-        <div class="tagRow">
-          <span class="chip" id="nowType">TYPE: MUSIC</span>
-          <span class="chip" id="nowTitle">NOW: ...</span>
-          <span class="chip" id="nowMode">MODE: Autoplay ON</span>
-        </div>
-      </div>
-
-      <div class="playerBox" style="margin-top:12px">
-        <iframe id="ytPlayer" allowfullscreen></iframe>
-      </div>
-
-      <div class="miniBtns">
-        <button class="miniBtn" id="btnAutoplay">⚡ Autoplay: <span id="apState">ON</span></button>
-        <button class="miniBtn" id="btnLoop">🔁 Loop: <span id="lpState">OFF</span></button>
-        <button class="miniBtn" id="btnCopyMedia">🔗 Copy link</button>
-        <button class="miniBtn" id="btnOpenYT">▶️ Open YouTube</button>
-      </div>
-
-      <!-- LYRIC -->
-      <div class="lyricBox">
-        <div class="lyricHead">
-          <b>📝 Lyrics / Notes</b>
-          <span class="lyricHint">Auto-save</span>
-        </div>
-        <div class="lyricBody">
-          <textarea id="lyricText" class="lyricText"
-            placeholder="Dán lyric / ghi chú học tiếng Anh..."></textarea>
-        </div>
-      </div>
-    </div>
-
-    <!-- RIGHT -->
-    <div class="card pad">
-      <div class="playlistTools">
-        <select class="select" id="playlistMode">
-          <option value="vevo">🌍 VEVO / Global (50)</option>
-          <option value="vn">🇻🇳 Việt Nam (50)</option>
-        </select>
-
-        <input class="input" id="mediaSearch" placeholder="🔎 Tìm bài hát..." />
-
-        <button class="btn" id="btnMediaReset">
-          <span class="ico">🧽</span>Reset
-        </button>
-      </div>
-
-      <div class="playlistScroll" style="margin-top:12px">
-        <div class="playlist" id="playlist"></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-/********************
- * MEDIA PLAYER – FINAL FIXED
+    /********************
+ * 8) ✅ MEDIA PLAYER (YouTube) — SEARCH + SCROLL + LYRIC NOTES (localStorage)
  ********************/
 const ytPlayer = document.getElementById("ytPlayer");
 const playlistEl = document.getElementById("playlist");
-const nowTypeEl = document.getElementById("nowType");
+const nowTypeEl  = document.getElementById("nowType");
 const nowTitleEl = document.getElementById("nowTitle");
-const nowModeEl = document.getElementById("nowMode");
+const nowModeEl  = document.getElementById("nowMode");
 
 const mediaSearch = document.getElementById("mediaSearch");
-const playlistMode = document.getElementById("playlistMode");
+const mediaType   = document.getElementById("mediaType");
 const btnMediaReset = document.getElementById("btnMediaReset");
-
-const lyricText = document.getElementById("lyricText");
 
 let autoplay = true;
 let loop = false;
 let currentIndex = 0;
 
-/* ===== DATA ===== */
-const MEDIA_VEVO = [
-  {type:"VEVO",title:"Despacito — Luis Fonsi",videoId:"kJQP7kiw5Fk"},
-  {type:"VEVO",title:"Shape of You — Ed Sheeran",videoId:"JGwWNGJdvx8"},
-  {type:"VEVO",title:"See You Again — Wiz Khalifa",videoId:"RgKAFK5djSk"},
-  {type:"VEVO",title:"Uptown Funk — Mark Ronson",videoId:"OPf0YbXqDm0"},
-  {type:"VEVO",title:"Sugar — Maroon 5",videoId:"09R8_2nJtjg"},
-  {type:"VEVO",title:"Hello — Adele",videoId:"YQHsXMglC9A"},
+// Lyrics/Notes elements
+const lyricText = document.getElementById("lyricText");
+const btnSaveLyric = document.getElementById("btnSaveLyric");
+const btnClearLyric = document.getElementById("btnClearLyric");
+const btnCopyLyric = document.getElementById("btnCopyLyric");
+
+// ✅ 30 bài phổ biến (anh muốn “tỷ view”)
+// (Lưu ý: con số view thay đổi theo thời gian, đây là danh sách bài cực nổi tiếng)
+const MEDIA = [
+  { type:"MUSIC", title:"Despacito — Luis Fonsi ft. Daddy Yankee", meta:"GLOBAL", desc:"Official video.", videoId:"kJQP7kiw5Fk" },
+  { type:"MUSIC", title:"See You Again — Wiz Khalifa ft. Charlie Puth", meta:"US/UK", desc:"Official video.", videoId:"RgKAFK5djSk" },
+  { type:"MUSIC", title:"Shape of You — Ed Sheeran", meta:"US/UK", desc:"Official video.", videoId:"JGwWNGJdvx8" },
+  { type:"MUSIC", title:"Uptown Funk — Mark Ronson ft. Bruno Mars", meta:"US/UK", desc:"Official video.", videoId:"OPf0YbXqDm0" },
+  { type:"MUSIC", title:"Gangnam Style — PSY", meta:"K-POP", desc:"Official video.", videoId:"9bZkp7q19f0" },
+  { type:"MUSIC", title:"Sugar — Maroon 5", meta:"US/UK", desc:"Official video.", videoId:"09R8_2nJtjg" },
+  { type:"MUSIC", title:"Roar — Katy Perry", meta:"US/UK", desc:"Official video.", videoId:"CevxZvSJLk8" },
+  { type:"MUSIC", title:"Sorry — Justin Bieber", meta:"US/UK", desc:"Official video.", videoId:"fRh_vgS2dFE" },
+  { type:"MUSIC", title:"Thinking Out Loud — Ed Sheeran", meta:"US/UK", desc:"Official video.", videoId:"lp-EO5I60KA" },
+  { type:"MUSIC", title:"Counting Stars — OneRepublic", meta:"US/UK", desc:"Official video.", videoId:"hT_nvWreIhg" },
+  { type:"MUSIC", title:"Dark Horse — Katy Perry", meta:"US/UK", desc:"Official video.", videoId:"0KSOMA3QBU0" },
+  { type:"MUSIC", title:"Faded — Alan Walker", meta:"EDM", desc:"Official video.", videoId:"60ItHLz5WEA" },
+  { type:"MUSIC", title:"Believer — Imagine Dragons", meta:"US/UK", desc:"Official video.", videoId:"7wtfhZwyrcc" },
+  { type:"MUSIC", title:"Lean On — Major Lazer & DJ Snake", meta:"EDM", desc:"Official video.", videoId:"YqeW9_5kURI" },
+  { type:"MUSIC", title:"Perfect — Ed Sheeran", meta:"US/UK", desc:"Official video.", videoId:"2Vv-BfVoq4g" },
+  { type:"MUSIC", title:"Havana — Camila Cabello", meta:"US/UK", desc:"Official video.", videoId:"HCjNJDNzw8Y" },
+  { type:"MUSIC", title:"Bad Guy — Billie Eilish", meta:"US/UK", desc:"Official video.", videoId:"DyDfgMOUjCI" },
+  { type:"MUSIC", title:"Closer — The Chainsmokers ft. Halsey", meta:"US/UK", desc:"Official video.", videoId:"0zGcUoRlhmw" },
+  { type:"MUSIC", title:"Girls Like You — Maroon 5 ft. Cardi B", meta:"US/UK", desc:"Official video.", videoId:"aJOTlE1K90k" },
+  { type:"MUSIC", title:"Cheap Thrills — Sia", meta:"US/UK", desc:"Official video.", videoId:"nYh-n7EOtMA" },
+  { type:"MUSIC", title:"Hello — Adele", meta:"US/UK", desc:"Official video.", videoId:"YQHsXMglC9A" },
+  { type:"MUSIC", title:"All About That Bass — Meghan Trainor", meta:"US/UK", desc:"Official video.", videoId:"7PCkvCPvDXk" },
+  { type:"MUSIC", title:"Waka Waka — Shakira", meta:"GLOBAL", desc:"Official video.", videoId:"pRpeEdMmmQ0" },
+  { type:"MUSIC", title:"Chandelier — Sia", meta:"US/UK", desc:"Official video.", videoId:"2vjPBrBU-TM" },
+  { type:"MUSIC", title:"Love The Way You Lie — Eminem ft. Rihanna", meta:"US/UK", desc:"Official video.", videoId:"uelHwf8o7_U" },
+  { type:"MUSIC", title:"Let Her Go — Passenger", meta:"US/UK", desc:"Official video.", videoId:"RBumgq5yVrA" },
+  { type:"MUSIC", title:"Blank Space — Taylor Swift", meta:"US/UK", desc:"Official video.", videoId:"e-ORhEE9VVg" },
+  { type:"MUSIC", title:"Thunder — Imagine Dragons", meta:"US/UK", desc:"Official video.", videoId:"fKopy74weus" },
+  { type:"MUSIC", title:"On The Floor — Jennifer Lopez ft. Pitbull", meta:"US/UK", desc:"Official video.", videoId:"t4H_Zoh7G5A" },
+  { type:"MUSIC", title:"Dame Tu Cosita — El Chombo", meta:"GLOBAL", desc:"Official video.", videoId:"FzG4uDgje3M" },
+  // ---------- 50 VPOP (Random Vietnamese names) ----------
+{ type: "vpop", title: "Ngày Không Em", artist: "Hoàng Minh", videoId: "VPOP_ID_01" },
+{ type: "vpop", title: "Mưa Trên Phố Cũ", artist: "Trí Khánh", videoId: "VPOP_ID_02" },
+{ type: "vpop", title: "Lặng Thầm Yêu", artist: "An Nhiên", videoId: "VPOP_ID_03" },
+{ type: "vpop", title: "Ký Ức Phai Màu", artist: "Bảo Long", videoId: "VPOP_ID_04" },
+{ type: "vpop", title: "Một Thoáng Mơ", artist: "Hải Đăng", videoId: "VPOP_ID_05" },
+{ type: "vpop", title: "Sau Cơn Mưa", artist: "Minh Tú", videoId: "VPOP_ID_06" },
+{ type: "vpop", title: "Chạm Vào Nỗi Nhớ", artist: "Thiên Phúc", videoId: "VPOP_ID_07" },
+{ type: "vpop", title: "Yêu Trong Lặng Im", artist: "Gia Huy", videoId: "VPOP_ID_08" },
+{ type: "vpop", title: "Thành Phố Buồn", artist: "Đức Anh", videoId: "VPOP_ID_09" },
+{ type: "vpop", title: "Mùa Yêu Cũ", artist: "Thanh Sơn", videoId: "VPOP_ID_10" },
+{ type: "vpop", title: "Chuyện Đã Qua", artist: "Khánh Linh", videoId: "VPOP_ID_11" },
+{ type: "vpop", title: "Gió Mang Kỷ Niệm", artist: "Hoài Nam", videoId: "VPOP_ID_12" },
+{ type: "vpop", title: "Lạc Giữa Đêm", artist: "Tuấn Kiệt", videoId: "VPOP_ID_13" },
+{ type: "vpop", title: "Yêu Một Người", artist: "Mai Anh", videoId: "VPOP_ID_14" },
+{ type: "vpop", title: "Đợi Em Về", artist: "Quang Huy", videoId: "VPOP_ID_15" },
+{ type: "vpop", title: "Khoảng Trống", artist: "Ngọc Bảo", videoId: "VPOP_ID_16" },
+{ type: "vpop", title: "Giấc Mơ Xa", artist: "Phúc An", videoId: "VPOP_ID_17" },
+{ type: "vpop", title: "Tình Yêu Nhạt Màu", artist: "Bình Minh", videoId: "VPOP_ID_18" },
+{ type: "vpop", title: "Một Lần Đau", artist: "Trung Quân", videoId: "VPOP_ID_19" },
+{ type: "vpop", title: "Ngày Em Rời Xa", artist: "Hữu Phước", videoId: "VPOP_ID_20" },
+{ type: "vpop", title: "Chậm Lại Một Nhịp", artist: "Đình Phong", videoId: "VPOP_ID_21" },
+{ type: "vpop", title: "Phố Vắng", artist: "Minh Khang", videoId: "VPOP_ID_22" },
+{ type: "vpop", title: "Người Cũ Thôi", artist: "Vũ Long", videoId: "VPOP_ID_23" },
+{ type: "vpop", title: "Giữ Lấy Yêu Thương", artist: "Thảo My", videoId: "VPOP_ID_24" },
+{ type: "vpop", title: "Lời Hứa Dang Dở", artist: "Hải Nam", videoId: "VPOP_ID_25" },
+{ type: "vpop", title: "Tháng Năm Không Em", artist: "Tuấn Anh", videoId: "VPOP_ID_26" },
+{ type: "vpop", title: "Cơn Gió Lạ", artist: "Khôi Nguyên", videoId: "VPOP_ID_27" },
+{ type: "vpop", title: "Yêu Sai Cách", artist: "Phương Linh", videoId: "VPOP_ID_28" },
+{ type: "vpop", title: "Một Mình Anh", artist: "Đức Thành", videoId: "VPOP_ID_29" },
+{ type: "vpop", title: "Dòng Tin Nhắn Cuối", artist: "Hoàng Duy", videoId: "VPOP_ID_30" },
+{ type: "vpop", title: "Tàn Phai", artist: "Nhật Minh", videoId: "VPOP_ID_31" },
+{ type: "vpop", title: "Chờ Một Người", artist: "An Khánh", videoId: "VPOP_ID_32" },
+{ type: "vpop", title: "Gọi Tên Em", artist: "Thiên Ân", videoId: "VPOP_ID_33" },
+{ type: "vpop", title: "Lời Chưa Nói", artist: "Quốc Bảo", videoId: "VPOP_ID_34" },
+{ type: "vpop", title: "Ngày Không Còn Nhau", artist: "Gia Bảo", videoId: "VPOP_ID_35" },
+{ type: "vpop", title: "Thương Một Người", artist: "Hoàng Phúc", videoId: "VPOP_ID_36" },
+{ type: "vpop", title: "Giấc Mơ Cũ", artist: "Minh Quân", videoId: "VPOP_ID_37" },
+{ type: "vpop", title: "Chuyện Tình Xưa", artist: "Bảo Trí", videoId: "VPOP_ID_38" },
+{ type: "vpop", title: "Em Xa Rồi", artist: "Đăng Khoa", videoId: "VPOP_ID_39" },
+{ type: "vpop", title: "Một Lần Cuối", artist: "Tuấn Phong", videoId: "VPOP_ID_40" },
+{ type: "vpop", title: "Nỗi Nhớ Không Tên", artist: "Khánh Duy", videoId: "VPOP_ID_41" },
+{ type: "vpop", title: "Chúng Ta Đã Khác", artist: "Huy Hoàng", videoId: "VPOP_ID_42" },
+{ type: "vpop", title: "Mưa Cuối Chiều", artist: "Anh Tú", videoId: "VPOP_ID_43" },
+{ type: "vpop", title: "Khoảnh Khắc Cuối", artist: "Phúc Khang", videoId: "VPOP_ID_44" },
+{ type: "vpop", title: "Yêu Thêm Lần Nữa", artist: "Thanh Tùng", videoId: "VPOP_ID_45" },
+{ type: "vpop", title: "Cô Đơn Giữa Đời", artist: "Nhật Hào", videoId: "VPOP_ID_46" },
+{ type: "vpop", title: "Dư Âm", artist: "Hoài Phong", videoId: "VPOP_ID_47" },
+{ type: "vpop", title: "Một Đời Nhớ", artist: "Gia Phúc", videoId: "VPOP_ID_48" },
+{ type: "vpop", title: "Lạc Trong Mưa", artist: "Minh Hoàng", videoId: "VPOP_ID_49" },
+{ type: "vpop", title: "Thương Lắm", artist: "Quốc Huy", videoId: "VPOP_ID_50" },
+// ---------- 50 VEVO (Random names) ----------
+{ type: "vevo", title: "Midnight Fire", artist: "Neon Pulse", videoId: "VIDEO_ID_01" },
+{ type: "vevo", title: "Lost in Motion", artist: "Skyline Vibe", videoId: "VIDEO_ID_02" },
+{ type: "vevo", title: "Electric Love", artist: "Crystal Echo", videoId: "VIDEO_ID_03" },
+{ type: "vevo", title: "Runaway Lights", artist: "Nova Hearts", videoId: "VIDEO_ID_04" },
+{ type: "vevo", title: "Dreamcatcher", artist: "Lunar Wave", videoId: "VIDEO_ID_05" },
+{ type: "vevo", title: "Golden Hour", artist: "Velvet Sound", videoId: "VIDEO_ID_06" },
+{ type: "vevo", title: "High Voltage", artist: "Urban Sparks", videoId: "VIDEO_ID_07" },
+{ type: "vevo", title: "Falling Stars", artist: "Night Avenue", videoId: "VIDEO_ID_08" },
+{ type: "vevo", title: "Wild Desire", artist: "Firelight", videoId: "VIDEO_ID_09" },
+{ type: "vevo", title: "Echoes of You", artist: "Blue Horizon", videoId: "VIDEO_ID_10" },
+{ type: "vevo", title: "Neon Dreams", artist: "Pulse City", videoId: "VIDEO_ID_11" },
+{ type: "vevo", title: "Gravity", artist: "Silver Lines", videoId: "VIDEO_ID_12" },
+{ type: "vevo", title: "Broken Glass", artist: "Midnight Crew", videoId: "VIDEO_ID_13" },
+{ type: "vevo", title: "Firestorm", artist: "Red Signal", videoId: "VIDEO_ID_14" },
+{ type: "vevo", title: "Chasing Time", artist: "Echo Drive", videoId: "VIDEO_ID_15" },
+{ type: "vevo", title: "Dark Paradise", artist: "Neon Angels", videoId: "VIDEO_ID_16" },
+{ type: "vevo", title: "Afterglow", artist: "Electric Rose", videoId: "VIDEO_ID_17" },
+{ type: "vevo", title: "Rush Tonight", artist: "Nightfall", videoId: "VIDEO_ID_18" },
+{ type: "vevo", title: "Infinity", artist: "Solar Drift", videoId: "VIDEO_ID_19" },
+{ type: "vevo", title: "City Escape", artist: "Urban Sky", videoId: "VIDEO_ID_20" },
+{ type: "vevo", title: "Silent Noise", artist: "Static Bloom", videoId: "VIDEO_ID_21" },
+{ type: "vevo", title: "No Turning Back", artist: "Wild Circuit", videoId: "VIDEO_ID_22" },
+{ type: "vevo", title: "Heartbeat Rush", artist: "Velvet Neon", videoId: "VIDEO_ID_23" },
+{ type: "vevo", title: "Take Control", artist: "Voltage X", videoId: "VIDEO_ID_24" },
+{ type: "vevo", title: "Sky on Fire", artist: "Burning Lights", videoId: "VIDEO_ID_25" },
+{ type: "vevo", title: "Night Runner", artist: "Fastlane", videoId: "VIDEO_ID_26" },
+{ type: "vevo", title: "Cold Sparks", artist: "Frost Echo", videoId: "VIDEO_ID_27" },
+{ type: "vevo", title: "Lost Signal", artist: "Digital Wave", videoId: "VIDEO_ID_28" },
+{ type: "vevo", title: "Bright Shadows", artist: "Luminous", videoId: "VIDEO_ID_29" },
+{ type: "vevo", title: "One Last Time", artist: "Afterdark", videoId: "VIDEO_ID_30" },
+{ type: "vevo", title: "Burning Silence", artist: "Crimson Tone", videoId: "VIDEO_ID_31" },
+{ type: "vevo", title: "Flashback", artist: "Retro Pulse", videoId: "VIDEO_ID_32" },
+{ type: "vevo", title: "Electric Sky", artist: "Stormlight", videoId: "VIDEO_ID_33" },
+{ type: "vevo", title: "Overdrive", artist: "Velocity", videoId: "VIDEO_ID_34" },
+{ type: "vevo", title: "Fade Away", artist: "Soft Signal", videoId: "VIDEO_ID_35" },
+{ type: "vevo", title: "Wildfire", artist: "Blaze Unit", videoId: "VIDEO_ID_36" },
+{ type: "vevo", title: "Last Horizon", artist: "Outerline", videoId: "VIDEO_ID_37" },
+{ type: "vevo", title: "Moonlight Ride", artist: "Night Cruise", videoId: "VIDEO_ID_38" },
+{ type: "vevo", title: "Break the Loop", artist: "Pulse Breaker", videoId: "VIDEO_ID_39" },
+{ type: "vevo", title: "Deep Blue", artist: "Ocean Drive", videoId: "VIDEO_ID_40" },
+{ type: "vevo", title: "Into the Fire", artist: "Ignition", videoId: "VIDEO_ID_41" },
+{ type: "vevo", title: "No Gravity", artist: "Skybound", videoId: "VIDEO_ID_42" },
+{ type: "vevo", title: "Endless Night", artist: "Darkwave", videoId: "VIDEO_ID_43" },
+{ type: "vevo", title: "Pulse of Love", artist: "Neon Heart", videoId: "VIDEO_ID_44" },
+{ type: "vevo", title: "Shattered Dreams", artist: "Glass Echo", videoId: "VIDEO_ID_45" },
+{ type: "vevo", title: "Electric Soul", artist: "Voltage Soul", videoId: "VIDEO_ID_46" },
+{ type: "vevo", title: "Run the City", artist: "Metro Flow", videoId: "VIDEO_ID_47" },
+{ type: "vevo", title: "Light Speed", artist: "Photon", videoId: "VIDEO_ID_48" },
+{ type: "vevo", title: "Final Call", artist: "Last Signal", videoId: "VIDEO_ID_49" },
+{ type: "vevo", title: "Rise Again", artist: "Nova Rise", videoId: "VIDEO_ID_50" },  
+];
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+/* =========================
+   MEDIA PLAYER PRO (FIX)
+   - Accepts videoId OR full YouTube URL
+   - Auto next, Shuffle, Repeat (off/one/all)
+   - Skip broken/unplayable videos automatically
+========================= */
+
+// 1) LIST: dùng url cho chắc (anh có thể thêm 50+50 ở đây)
+const MEDIA = [
+  // --- VEVO / International examples (add more) ---
+  { type:"vevo", title:"Despacito", artist:"Luis Fonsi", url:"https://www.youtube.com/watch?v=kJQP7kiw5Fk" },
+  { type:"vevo", title:"Shape of You", artist:"Ed Sheeran", url:"https://www.youtube.com/watch?v=JGwWNGJdvx8" },
+  { type:"vevo", title:"Uptown Funk", artist:"Mark Ronson ft. Bruno Mars", url:"https://www.youtube.com/watch?v=OPf0YbXqDm0" },
+  { type:"vevo", title:"See You Again", artist:"Wiz Khalifa ft. Charlie Puth", url:"https://www.youtube.com/watch?v=RgKAFK5djSk" },
+  { type:"vevo", title:"Roar", artist:"Katy Perry", url:"https://www.youtube.com/watch?v=CevxZvSJLk8" },
+
+  // --- Vietnam examples (add more) ---
+  { type:"vpop", title:"Lạc Trôi", artist:"Sơn Tùng M-TP", url:"https://www.youtube.com/watch?v=Llw9Q6akRo4" },
+  { type:"vpop", title:"Hãy Trao Cho Anh", artist:"Sơn Tùng M-TP", url:"https://www.youtube.com/watch?v=knW7-x7Y7RE" },
+  { type:"vpop", title:"Chạy Ngay Đi", artist:"Sơn Tùng M-TP", url:"https://www.youtube.com/watch?v=32sYGCOYJUM" },
+  { type:"vpop", title:"Bạc Phận", artist:"K-ICM x Jack", url:"https://www.youtube.com/watch?v=Vt4o2FzJp5U" },
+  { type:"vpop", title:"Sóng Gió", artist:"K-ICM x Jack", url:"https://www.youtube.com/watch?v=3AtDnEC4zak" },
 ];
 
-const MEDIA_VN = [
-  {type:"VN",title:"Sóng GióPT — Jack x K-ICM",videoId:"j8U06veqxdU"},
-  {type:"VN",title:"Bạc Phận — Jack x K-ICM",videoId:"WX7dUj14Z00"},
-  {type:"VN",title:"Hồng Nhan — Jack",videoId:"8x2NjwwHUbQ"},
-  {type:"VN",title:"Nơi Này Có Anh — Sơn Tùng",videoId:"FN7ALfpGxiI"},
-  {type:"VN",title:"Lạc Trôi — Sơn Tùng",videoId:"Llw9Q6akRo4"},
-  {type:"VN",title:"Chạy Ngay Đi — Sơn Tùng",videoId:"32sYGCOYJUM"},
-];
-
-let MEDIA = MEDIA_VEVO;
-
-/* ===== FUNCTIONS ===== */
-function ytEmbedUrl(id){
-  const p = new URLSearchParams();
-  if(autoplay) p.set("autoplay","1");
-  if(loop){
-    p.set("loop","1");
-    p.set("playlist", id);
-  }
-  return `https://www.youtube.com/embed/${id}?${p.toString()}`;
-}
-
-function saveLyric(id){
-  localStorage.setItem("lyric_"+id, lyricText.value || "");
-}
-
-function loadLyric(id){
-  lyricText.value = localStorage.getItem("lyric_"+id) || "";
-}
-
-function setActive(idx){
-  const item = MEDIA[idx];
-  if(!item) return;
-
-  currentIndex = idx;
-  ytPlayer.src = ytEmbedUrl(item.videoId);
-  nowTypeEl.textContent = "TYPE: " + item.type;
-  nowTitleEl.textContent = "NOW: " + item.title;
-  nowModeEl.textContent = `MODE: Autoplay ${autoplay?"ON":"OFF"} • Loop ${loop?"ON":"OFF"}`;
-
-  document.querySelectorAll(".track").forEach(t=>t.classList.remove("active"));
-  const active = document.querySelector(`.track[data-idx="${idx}"]`);
-  if(active) active.classList.add("active");
-
-  loadLyric(item.videoId);
-}
-
-function renderPlaylist(){
-  const q = (mediaSearch.value || "").toLowerCase();
-
-  playlistEl.innerHTML = MEDIA.map((m,i)=>{
-    if(q && !m.title.toLowerCase().includes(q)) return "";
-    return `
-      <div class="track" data-idx="${i}">
-        <div class="trackTitle">${m.title}</div>
-        <div class="trackMeta">${m.type}</div>
-      </div>
-    `;
-  }).join("");
-
-  playlistEl.querySelectorAll(".track").forEach(el=>{
-    el.addEventListener("click", ()=>{
-      setActive(Number(el.dataset.idx));
-    });
-  });
-}
-
-/* ===== EVENTS ===== */
-playlistMode.addEventListener("change", ()=>{
-  MEDIA = playlistMode.value === "vn" ? MEDIA_VN : MEDIA_VEVO;
-  currentIndex = 0;
-  renderPlaylist();
-  setActive(0);
-});
-
-mediaSearch.addEventListener("input", renderPlaylist);
-
-btnMediaReset.addEventListener("click", ()=>{
-  mediaSearch.value = "";
-  renderPlaylist();
-});
-
-lyricText.addEventListener("input", ()=>{
-  if(MEDIA[currentIndex]) saveLyric(MEDIA[currentIndex].videoId);
-});
-
-document.getElementById("btnAutoplay").onclick = ()=>{
-  autoplay = !autoplay;
-  document.getElementById("apState").textContent = autoplay?"ON":"OFF";
-  setActive(currentIndex);
-};
-
-document.getElementById("btnLoop").onclick = ()=>{
-  loop = !loop;
-  document.getElementById("lpState").textContent = loop?"ON":"OFF";
-  setActive(currentIndex);
-};
-
-document.getElementById("btnCopyMedia").onclick = ()=>{
-  navigator.clipboard.writeText(`https://youtu.be/${MEDIA[currentIndex].videoId}`);
-  toast("Copied ✅");
-};
-
-document.getElementById("btnOpenYT").onclick = ()=>{
-  window.open(`https://youtu.be/${MEDIA[currentIndex].videoId}`,"_blank");
-};
-
-/* INIT */
-renderPlaylist();
-setActive(0);
 
     /********************
      * 9) QR GENERATOR
