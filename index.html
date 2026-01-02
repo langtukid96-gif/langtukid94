@@ -2259,24 +2259,22 @@ btnMediaReset.addEventListener("click", ()=>{
 
     document.getElementById("btnQRVCF").addEventListener("click", ()=>{
       const vcf =
-`BEGIN:VCARD
-VERSION:3.0
-FN:Tran Quoc Trung
-EMAIL:${CONTACT.email}
-URL:${location.href.split("#")[0]}
-X-SOCIALPROFILE;type=facebook:${CONTACT.facebook}
-NOTE:Veterinary • AI • App Builder
-END:VCARD`;
-      makeMainQR(vcf);
+      `BEGIN:VCARD
+       VERSION:3.0
+       FN:Tran Quoc Trung
+       EMAIL:${CONTACT.email}
+       URL:${location.href.split("#")[0]}
+       X-SOCIALPROFILE;type=facebook:${CONTACT.facebook}
+       NOTE:Veterinary • AI • App Builder
+       END:VCARD`;
+       makeMainQR(vcf);
     });
-
     const siteUrl = location.href.split("#")[0];
     document.getElementById("qrSiteText").textContent = siteUrl;
-
     makeQR(document.getElementById("qrSiteBox"), siteUrl);
     makeQR(document.getElementById("qrFbBox"), CONTACT.facebook);
     makeQR(document.getElementById("qrZaloBox"), CONTACT.zalo);
-
+    });
     /********************
      * 10) PRINT CV
      ********************/
